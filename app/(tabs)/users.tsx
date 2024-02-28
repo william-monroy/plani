@@ -27,7 +27,7 @@ const UserCard = ({ name, email }: UserCardProps) => {
 
 const UsersPage = () => {
   const getData = async () => {
-    const collectionRef = collection(db, "users");
+    const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
       setUsers(
@@ -62,7 +62,7 @@ const UsersPage = () => {
       ) : (
         <ScrollView>
           {users.map((user: any, key: number) => {
-            return <UserCard key={key} name={user?.id} email={user?.email} />;
+            return <UserCard key={key} name={user?.id} email={user?.Name} />;
           })}
         </ScrollView>
       )}
