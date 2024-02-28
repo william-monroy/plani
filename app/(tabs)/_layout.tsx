@@ -1,4 +1,3 @@
-import React from "react";
 import { Tabs, router } from "expo-router";
 import { useState } from "react";
 import { getAuth } from "firebase/auth";
@@ -25,7 +24,7 @@ const TabsLayout = () => {
           headerShown: false,
           title: "Buscar",
           tabBarIcon: ({ color }) => (
-            <Octicons name="search" size={24} color={color} />
+            <Octicons name="search" size={24} color={"red"} />
           ),
           tabBarIconStyle: { marginBottom: 5 },
         }}
