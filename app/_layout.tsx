@@ -27,6 +27,7 @@ const RootLayout = () => {
           name="register"
           options={{
             presentation: "modal",
+            presentationTitle: "Regístrate",
           }}
         />
       </Stack>
