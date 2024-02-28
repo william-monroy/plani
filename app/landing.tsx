@@ -5,9 +5,9 @@ const LandingScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Plani</Text>
-      <View>
-        <Button title="Login" onPress={() => router.push("/login")} />
-        <Button title="Register" onPress={() => router.push("/register")} />
+      <View style={styles.buttons}>
+        <Button title="Login" color="orange" onPress={() => router.push("/login")} />
+        <Button title="Register" color="orange" onPress={() => router.push("/register")} />
       </View>
     </View>
   );
@@ -24,6 +24,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
+  },
+  buttons: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "50%",
   },
 });
 

@@ -20,7 +20,7 @@ const RegisterScreen = () => {
 
     try {
       const docRef = await addDoc(collection(db, "users"), {
-        email,
+        email: email,
         registered: new Date().toISOString(),
       });
       console.log("Document written with ID: ", docRef.id);
