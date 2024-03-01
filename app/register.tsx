@@ -12,7 +12,7 @@ const RegisterScreen = () => {
   const handleRegister = async () => {
     createUserWithEmailAndPassword(getAuth(), email, password)
       .then((user) => {
-        if (user) router.replace("/(tabs)");
+        if (user) router.replace("preferences");
       })
       .catch((err) => {
         alert(err?.message);

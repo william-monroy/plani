@@ -1,5 +1,5 @@
 import { Tabs, router } from "expo-router";
-import { useState } from "react"; 
+import { useState } from "react";
 import { getAuth } from "firebase/auth";
 import { Text } from "react-native";
 import { Octicons } from "@expo/vector-icons";

@@ -27,7 +27,12 @@ const RootLayout = () => {
           name="register"
           options={{
             presentation: "modal",
-            presentationTitle: "Regístrate",
+          }}
+        />
+        <Stack.Screen
+          name="preferences"
+          options={{
+            headerShown: false,
           }}
         />
       </Stack>
