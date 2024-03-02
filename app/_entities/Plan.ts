@@ -4,15 +4,15 @@ export interface Plan {
     coordinates: GeoPoint;
     dateEnd: Timestamp;
     dateStart: Timestamp;
-    description: String;
-    guests: String[];
-    idAdmin: String;
-    idDireccion: String;
-    idValoracion: String;
-    labels: String[];
-    name: String;
-    picture: String;
-    requests: String[];
-    score: Number;
-    uid: String;
+    description?: string;
+    guests?: string[];
+    idAdmin: string;
+    idDireccion: string;
+    idValoracion?: string;
+    labels?: string[];
+    name: string;
+    picture?: string;
+    requests?: string[];
+    score?: Number;
+    uid: string;
 }

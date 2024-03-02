@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { router } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "./_infrastructure/firebase";
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState<string>("");
