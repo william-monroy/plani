@@ -26,7 +26,6 @@ const TabsLayout = () => {
           tabBarIcon: ({ color }) => (
             <Octicons name="search" size={24} color={"red"} />
           ),
-          tabBarIconStyle: { marginBottom: 5 },
         }}
       />
       <Tabs.Screen
