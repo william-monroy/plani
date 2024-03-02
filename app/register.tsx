@@ -11,22 +11,24 @@ const RegisterScreen = () => {
 
   const handleRegister = async () => {
     createUserWithEmailAndPassword(getAuth(), email, password)
-      .then((user) => {
-        if (user) router.replace("preferences");
+      .then(async (user) => {
+        if (user) {
+          try {
+            const docRef = await addDoc(collection(db, "users"), {
+              email: email,
+              registered: new Date().toISOString(),
+              uid: user.user.uid,
+            });
+            console.log("Document written with ID: ", docRef.id);
+          } catch (e) {
+            console.error("Error adding document: ", e);
+          }
+          router.replace("preferences");
+        }
       })
       .catch((err) => {
         alert(err?.message);
       });
-
-    try {
-      const docRef = await addDoc(collection(db, "users"), {
-        email: email,
-        registered: new Date().toISOString(),
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
   };
 
   return (
