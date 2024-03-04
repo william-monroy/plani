@@ -5,22 +5,32 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image
+  Image,
 } from "react-native";
 
 import { Timestamp, collection, onSnapshot } from "firebase/firestore";
 import { db } from "../_infrastructure/firebase";
 
-import { Plan } from "../_entities/Plan";
+import { Plan } from "../_entities/Plan.type";
 import { PlanCardProps } from "./_entities/PlanCardProps";
 
-
 const PlanCard = ({ plan }: PlanCardProps) => {
-  const { name, picture, dateEnd, dateStart, description, guests, labels, score } = plan;
-  
+  const {
+    name,
+    picture,
+    dateEnd,
+    dateStart,
+    description,
+    guests,
+    labels,
+    score,
+  } = plan;
+
   return (
     <TouchableOpacity style={styles.userCardContainer}>
-      {picture && <Image source={{ uri: picture }} style={styles.userCardImage} />}
+      {picture && (
+        <Image source={{ uri: picture }} style={styles.userCardImage} />
+      )}
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
         {labels && (
@@ -59,7 +69,6 @@ const UsersPage = () => {
     getData();
   }, []);
 
-  
   return (
     <View style={styles.container}>
       <Text style={{ marginBottom: 15 }}>All</Text>
