@@ -21,6 +21,7 @@ const RootLayout = () => {
           name="login"
           options={{
             presentation: "modal",
+            headerShown: false,
           }}
         />
         <Stack.Screen
