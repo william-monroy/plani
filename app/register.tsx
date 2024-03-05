@@ -3,7 +3,9 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { router } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
+import { LinearGradient } from "expo-linear-gradient";
 import { db } from "./_infrastructure/firebase";
+
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState<string>("");
@@ -11,44 +13,54 @@ const RegisterScreen = () => {
 
   const handleRegister = async () => {
     createUserWithEmailAndPassword(getAuth(), email, password)
-      .then((user) => {
-        if (user) router.replace("/(tabs)");
+      .then(async (user) => {
+        if (user) {
+          try {
+            const docRef = await addDoc(collection(db, "users"), {
+              email: email,
+              registered: new Date().toISOString(),
+              uid: user.user.uid,
+            });
+            console.log("Document written with ID: ", docRef.id);
+          } catch (e) {
+            console.error("Error adding document: ", e);
+          }
+          router.replace("preferences");
+        }
       })
       .catch((err) => {
         alert(err?.message);
       });
-
-    try {
-      const docRef = await addDoc(collection(db, "users"), {
-        email,
-        registered: new Date().toISOString(),
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>RegisterScreen</Text>
-      <View>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-          onChangeText={(text) => setEmail(text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-          onChangeText={(text) => setPassword(text)}
-        />
-        <Pressable style={styles.button} onPress={handleRegister}>
-          <Text style={styles.textButton}>Register</Text>
-        </Pressable>
-      </View>
+      <LinearGradient
+        start={{ x: 1.5, y: 1.5 }}
+        end={{ x: 0, y: 0 }}
+        colors={['white', '#FFD700', '#FF6347']}
+        style={styles.gradient}
+      ><Text style={styles.title}>¿Aún no has creado una cuenta?</Text>
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            keyboardType="email-address"
+            onChangeText={(text) => setEmail(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry
+            onChangeText={(text) => setPassword(text)}
+          />
+          <Pressable style={styles.button} onPress={handleRegister}>
+            <Text style={styles.textButton}>Register</Text>
+          </Pressable>
+          <Text style={styles.text} onPress={() => router.push("/login")}>¿Ya tienes una cuenta?</Text>  
+
+        </View>
+      </LinearGradient>
     </View>
   );
 };
@@ -57,33 +69,53 @@ const styles = StyleSheet.create({
   container: {
     height: "100%",
     display: "flex",
-    // justifyContent: "",
     alignItems: "center",
     backgroundColor: "#f9f9f9",
   },
+  gradient: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
-    fontSize: 24,
+    width: "80%",
+    
+    fontSize: 26,
     fontWeight: "bold",
-    marginTop: 40,
+    marginTop: 60,
     marginBottom: 180,
+    color: "#121212",
+  },form: {
+    width: "80%",
+    marginTop: 50,
   },
   input: {
-    margin: 15,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: "#f6f6f6",
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    color: "#121212",
   },
   button: {
-    marginTop: 20,
-    width: 120,
-    height: 40,
-    backgroundColor: "#1283d4",
-    borderRadius: 60,
-    display: "flex",
-    justifyContent: "center",
+    backgroundColor: "#f5a623", 
+    borderRadius: 10,
+    height: 50,
     alignItems: "center",
+    justifyContent: "center",
   },
   textButton: {
     color: "#f6f6f6",
     fontSize: 19,
-    fontWeight: "700",
+    fontWeight: "bold",
+  },
+  text: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 10,
+    marginBottom: 50,
+    marginLeft: 20,
+    marginRight: 20,
   },
 });
 
