@@ -1,9 +1,9 @@
-import { GeoPoint, Timestamp } from "firebase/firestore";
+import { GeoPoint } from "firebase/firestore";
 
 export interface Plan {
   coordinates: GeoPoint;
-  dateEnd: Timestamp | undefined;
-  dateStart: Timestamp | undefined;
+  dateEnd: Date | undefined;
+  dateStart: Date | undefined;
   description?: string;
   guests: string[];
   idAdmin: string;
