@@ -19,6 +19,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { db } from "@/app/_infrastructure/firebase";
+import { useUserStore } from "@/store/user-store";
 
 const PreferencesScreen = () => {
   const [cine, setCine] = useState(false);
@@ -61,27 +62,25 @@ const PreferencesScreen = () => {
   ];
 
   const handlePreferences = async () => {
-    const currentUser = getAuth().currentUser;
-    if (currentUser) {
-      const userId = currentUser.uid;
-      try {
-        const selectedPreferences = preferences
-          .filter((pref) => pref.value === true)
-          .map((pref) => pref.name);
+    const { uid } = useUserStore.getState();
+    const userId = uid;
+    try {
+      const selectedPreferences = preferences
+        .filter((pref) => pref.value === true)
+        .map((pref) => pref.name);
 
-        const q = query(collection(db, "users"), where("uid", "==", userId));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach(async (docRef) => {
-          const userDoc = doc(db, "users", docRef.id);
-          await updateDoc(userDoc, {
-            labels: selectedPreferences,
-          });
-          console.log("Document updated for user with ID: ", userId);
-          router.replace("/(tabs)");
+      const q = query(collection(db, "Usuarios"), where("uid", "==", userId));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (docRef) => {
+        const userDoc = doc(db, "Usuarios", docRef.id);
+        await updateDoc(userDoc, {
+          labels: selectedPreferences,
         });
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
+        console.log("Document updated for user with ID: ", userId);
+        router.replace("/(tabs)");
+      });
+    } catch (e) {
+      console.error("Error adding document: ", e);
     }
   };
 

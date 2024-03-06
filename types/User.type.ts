@@ -1,14 +1,15 @@
-import { Timestamp } from "firebase/firestore";
+// "male" | "female" | "other"
+export type Gender = "male" | "female" | "other" | "";
 
 export interface User {
-  dateBirth?: Timestamp | undefined;
+  dateBirth?: Date | undefined;
   direcciones: String[];
   email: String;
   firstName: String;
   lastName: String;
-  gender: "male" | "female" | "other" | undefined;
+  gender: Gender | undefined;
   labels: String[];
   score: Number;
   uid: String;
-  registered: Timestamp | undefined;
+  registered: Date | undefined;
 }

@@ -23,27 +23,32 @@ const LoginScreen = () => {
       <LinearGradient
         start={{ x: 1.5, y: 1.5 }}
         end={{ x: 0, y: 0 }}
-        colors={['white', '#FFD700', '#FF6347']}
+        colors={["white", "#FFD700", "#FF6347"]}
         style={styles.gradient}
       >
-        <Text style={styles.title}>Inicia sesión en planti </Text>
+        <Text style={styles.title}>Iniciar Sesión</Text>
         <View style={styles.form}>
+          <Text style={styles.label}>Correo</Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder="Ingrese su correo"
             keyboardType="email-address"
             onChangeText={(text) => setEmail(text)}
           />
+          <Text style={styles.label}>Contraseña</Text>
+
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder="Ingrese su contraseña"
             secureTextEntry
             onChangeText={(text) => setPassword(text)}
           />
           <Pressable style={styles.button} onPress={handleLogin}>
             <Text style={styles.textButton}>Login</Text>
           </Pressable>
-          <Text style={styles.text} onPress={() => router.push("/register")}>Crear una cuenta</Text>  
+          <Text style={styles.text} onPress={() => router.push("/register")}>
+            Crear una cuenta
+          </Text>
         </View>
       </LinearGradient>
     </View>
@@ -59,8 +64,8 @@ const styles = StyleSheet.create({
   },
   gradient: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     width: "80%",
@@ -74,6 +79,11 @@ const styles = StyleSheet.create({
     width: "80%",
     marginTop: 50,
   },
+  label: {
+    fontSize: 14,
+    marginBottom: 8,
+    color: "#121212",
+  },
   input: {
     height: 50,
     borderRadius: 10,
@@ -83,7 +93,7 @@ const styles = StyleSheet.create({
     color: "#121212",
   },
   button: {
-    backgroundColor: "#f5a623", 
+    backgroundColor: "#f5a623",
     borderRadius: 10,
     height: 50,
     alignItems: "center",
@@ -95,9 +105,10 @@ const styles = StyleSheet.create({
     color: "#f6f6f6",
   },
   text: {
-    fontSize: 12,
+    fontSize: 14,
     textAlign: "center",
     marginTop: 10,
+    color: "#542500",
     marginBottom: 50,
     marginLeft: 20,
     marginRight: 20,
