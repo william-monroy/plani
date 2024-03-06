@@ -39,7 +39,7 @@
   "private": true,
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "git-cz"
     },
     "git-cz": {
       "path": "./node_modules/git-cz"
