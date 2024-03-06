@@ -24,7 +24,7 @@ const TabsLayout = () => {
           headerShown: false,
           title: "Buscar",
           tabBarIcon: ({ color }) => (
-            <Octicons name="search" size={24} color={"red"} />
+            <Octicons name="search" size={24} color={color} />
           ),
         }}
       />

@@ -17,12 +17,16 @@ const HomePage = () => {
   const { firstName, gender } = useUserStore((state) => state);
 
   const getData = async () => {
+    console.log("getData");
     const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
+      console.log(data.docs);
+      // console.log(first)
       setPlanes(
         await data.docs.map((item) => {
           const planData = { ...item.data(), id: item.id } as unknown;
+          console.log("planData", planData);
           return planData as Plan;
         })
       );
