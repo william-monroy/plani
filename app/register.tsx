@@ -1,54 +1,162 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  Platform,
+} from "react-native";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase";
+import { LinearGradient } from "expo-linear-gradient";
+import { db } from "./_infrastructure/firebase";
+import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Gender, User } from "@/types/User.type";
+import { useUserStore } from "@/store/user-store";
 
 const RegisterScreen = () => {
+  const insets = useSafeAreaInsets();
+
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [birthDate, setBirthDate] = useState(new Date());
+  const [gender, setGender] = useState<Gender>("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  const { update } = useUserStore((state) => state);
 
   const handleRegister = async () => {
     createUserWithEmailAndPassword(getAuth(), email, password)
-      .then((user) => {
-        if (user) router.replace("/(tabs)");
+      .then(async (user) => {
+        if (user) {
+          try {
+            const docRef = await addDoc(collection(db, "Usuarios"), {
+              email: email,
+              registered: new Date(),
+              uid: user.user.uid,
+              birthDate: birthDate,
+              gender: gender,
+              firstName: firstName,
+              lastName: lastName,
+              labels: [],
+              direcciones: [],
+              score: 0,
+            });
+            // console.log("Document written with ID: ", docRef.id);
+            update({
+              email: email,
+              registered: new Date(),
+              uid: user.user.uid,
+              dateBirth: birthDate,
+              gender: gender,
+              firstName: firstName,
+              lastName: lastName,
+            });
+          } catch (e) {
+            console.error("Error adding document: ", e);
+          }
+          router.replace("preferences");
+        }
       })
       .catch((err) => {
         alert(err?.message);
       });
-
-    try {
-      const docRef = await addDoc(collection(db, "users"), {
-        email,
-        registered: new Date().toISOString(),
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>RegisterScreen</Text>
-      <View>
+      <LinearGradient
+        start={{ x: 1.5, y: 1.5 }}
+        end={{ x: 0, y: 0 }}
+        colors={["white", "#FFD700", "#FF6347"]}
+        style={[{ paddingTop: insets.top }, styles.gradient]}
+      >
+        <Text style={styles.title}>Registrate 🌱</Text>
+        <Text style={styles.label}>Nombres</Text>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder="Ingrese su nombre(s)"
+          onChangeText={setFirstName}
+        />
+        <Text style={styles.label}>Apellidos</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ingrese sus apellidos"
+          onChangeText={setLastName}
+        />
+        <Text style={styles.label}>Correo</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ingrese su correo"
           keyboardType="email-address"
-          onChangeText={(text) => setEmail(text)}
+          onChangeText={setEmail}
         />
+        <Text style={styles.label}>Contraseña</Text>
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="Ingrese su contraseña"
           secureTextEntry
-          onChangeText={(text) => setPassword(text)}
+          onChangeText={setPassword}
         />
+        <View style={styles.row}>
+          <View style={(styles.rowItem, { alignItems: "flex-start" })}>
+            <Text style={styles.label}>Fecha de nacimiento</Text>
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                value={birthDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(true);
+                  if (selectedDate) {
+                    setBirthDate(selectedDate);
+                  }
+                }}
+              />
+            ) : (
+              <Pressable
+                style={[
+                  styles.input,
+                  {
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  },
+                ]}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text>{birthDate.toDateString()}</Text>
+              </Pressable>
+            )}
+          </View>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Género</Text>
+            <Picker
+              selectedValue={gender}
+              onValueChange={(itemValue, itemIndex) => setGender(itemValue)}
+              mode="dropdown" // Asegúrate de establecer el modo adecuado
+            >
+              <Picker.Item label="Seleciona tu género" value="" />
+              <Picker.Item label="Hombre" value="male" />
+              <Picker.Item label="Mujer" value="female" />
+              <Picker.Item label="Otro" value="other" />
+            </Picker>
+          </View>
+        </View>
+
         <Pressable style={styles.button} onPress={handleRegister}>
-          <Text style={styles.textButton}>Register</Text>
+          <Text style={styles.textButton}>Crear Cuenta</Text>
         </Pressable>
-      </View>
+        <Link href={"/login"} style={styles.text}>
+          ¿Ya tienes cuenta? Inicia sesión
+        </Link>
+      </LinearGradient>
     </View>
   );
 };
@@ -56,34 +164,65 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     height: "100%",
+    width: "100%",
     display: "flex",
-    // justifyContent: "",
-    alignItems: "center",
-    backgroundColor: "#f9f9f9",
+    flexDirection: "column",
+  },
+  gradient: {
+    ...StyleSheet.absoluteFillObject,
+    paddingHorizontal: 20,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 8,
+    color: "#121212",
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
-    marginTop: 40,
-    marginBottom: 180,
+    marginTop: 10,
+    marginBottom: 40,
+    color: "#121212",
+  },
+  form: {
+    width: "80%",
+    marginTop: 50,
   },
   input: {
-    margin: 15,
+    height: 50,
+    borderRadius: 15,
+    backgroundColor: "#f6f6f6",
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    color: "#121212",
   },
+
   button: {
-    marginTop: 20,
-    width: 120,
-    height: 40,
-    backgroundColor: "#1283d4",
-    borderRadius: 60,
-    display: "flex",
-    justifyContent: "center",
+    backgroundColor: "#f5a623",
+    borderRadius: 10,
+    height: 50,
     alignItems: "center",
+    justifyContent: "center",
   },
   textButton: {
     color: "#f6f6f6",
     fontSize: 19,
-    fontWeight: "700",
+    fontWeight: "bold",
+  },
+  text: {
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 10,
+    color: "#542500",
+  },
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    width: "100%",
+    gap: 10,
+  },
+  rowItem: {
+    width: "50%",
   },
 });
 

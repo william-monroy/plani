@@ -1,15 +1,65 @@
-import { View, Text, StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../_infrastructure/firebase";
+
+import { Plan } from "@/types/Plan.type";
+import { useUserStore } from "@/store/user-store";
+import { PlanCard } from "@/components/PlanCard";
 
 const HomePage = () => {
   const insets = useSafeAreaInsets();
+  const [planes, setPlanes] = useState<Plan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { firstName, gender } = useUserStore((state) => state);
+
+  const getData = async () => {
+    console.log("getData");
+    const collectionRef = collection(db, "Planes");
+
+    await onSnapshot(collectionRef, async (data) => {
+      console.log(data.docs);
+      // console.log(first)
+      setPlanes(
+        await data.docs.map((item) => {
+          const planData = { ...item.data(), id: item.id } as unknown;
+          console.log("planData", planData);
+          return planData as Plan;
+        })
+      );
+      setIsLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   return (
     <View style={[{ paddingTop: insets.top }, styles.container]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Bienvenido 👋</Text>
+        <Text style={styles.title}>
+          Bienvenid{gender === "male" ? "o" : gender === "female" ? "a" : "x"}{" "}
+          {firstName} 👋
+        </Text>
       </View>
-      <Text>Soy un texto</Text>
+      <View style={styles.container2}>
+        <Text style={[{ marginBottom: 15 }, styles.subTitle]}>
+          Planes cercanos
+        </Text>
+        {isLoading ? (
+          <Text>Loading users...</Text>
+        ) : (
+          <ScrollView style={styles.plans}>
+            {planes.map((plan: Plan, key: number) => (
+              <PlanCard key={key} {...plan} />
+            ))}
+          </ScrollView>
+        )}
+      </View>
     </View>
   );
 };
@@ -28,11 +78,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginTop: 15,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
+  },
+  subTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  container2: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  plans: {
+    display: "flex",
+    gap: 10,
   },
 });
 

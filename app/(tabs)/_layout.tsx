@@ -1,5 +1,5 @@
 import { Tabs, router } from "expo-router";
-import { useState } from "react"; 
+import { useState } from "react";
 import { getAuth } from "firebase/auth";
 import { Text } from "react-native";
 import { Octicons } from "@expo/vector-icons";
@@ -24,15 +24,14 @@ const TabsLayout = () => {
           headerShown: false,
           title: "Buscar",
           tabBarIcon: ({ color }) => (
-            <Octicons name="search" size={24} color={"red"} />
+            <Octicons name="search" size={24} color={color} />
           ),
-          tabBarIconStyle: { marginBottom: 5 },
         }}
       />
       <Tabs.Screen
         name="users"
         options={{
-          headerTitle: "Users Regsitered",
+          headerTitle: "Mis Planes",
           title: "Planes",
         }}
       />
