@@ -53,7 +53,7 @@ const HomePage = () => {
         {isLoading ? (
           <Text>Loading users...</Text>
         ) : (
-          <ScrollView>
+          <ScrollView style={styles.plans}>
             {planes.map((plan: Plan, key: number) => (
               <PlanCard key={key} {...plan} />
             ))}
@@ -91,6 +91,10 @@ const styles = StyleSheet.create({
   container2: {
     paddingVertical: 20,
     paddingHorizontal: 10,
+  },
+  plans: {
+    display: "flex",
+    gap: 10,
   },
 });
 

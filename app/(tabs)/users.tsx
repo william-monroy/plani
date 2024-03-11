@@ -33,7 +33,7 @@ const UsersPage = () => {
   return (
     <View style={styles.container}>
       <Text style={{ marginBottom: 15 }}>All</Text>
-      {isLoading ? (
+      {/* {isLoading ? (
         <Text>Loading users...</Text>
       ) : (
         <ScrollView>
@@ -41,7 +41,7 @@ const UsersPage = () => {
             <PlanCard key={key} {...plan} />
           ))}
         </ScrollView>
-      )}
+      )} */}
     </View>
   );
 };

@@ -31,7 +31,7 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="users"
         options={{
-          headerTitle: "Users Regsitered",
+          headerTitle: "Mis Planes",
           title: "Planes",
         }}
       />

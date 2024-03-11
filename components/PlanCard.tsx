@@ -19,12 +19,18 @@ export const PlanCard = ({
       )}
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
+        <Text style={styles.userCardDate}>
+          {new Date(dateStart?.seconds * 1000).toLocaleDateString()}
+          {" - "}
+          {new Date(dateEnd?.seconds * 1000).toLocaleDateString()}
+        </Text>
+        <Text style={styles.userCardDescription}>{description}</Text>
         {labels && (
           <View style={styles.labelsContainer}>
             {labels.map((label: string, index: number) => (
-              <Text key={index} style={styles.labelText}>
-                {label}
-              </Text>
+              <View key={index} style={styles.labelContainer}>
+                <Text style={styles.labelText}>{label}</Text>
+              </View>
             ))}
           </View>
         )}
@@ -36,34 +42,50 @@ export const PlanCard = ({
 const styles = StyleSheet.create({
   userCardContainer: {
     display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    flexDirection: "column",
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
+    borderRadius: 10,
+    width: "100%",
+    marginBottom: 15,
+    paddingBottom: 10,
   },
   userCardTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     marginTop: 8,
   },
   userCardSubTitle: {
+    fontSize: 18,
+  },
+  userCardDate: {
     fontSize: 14,
-    color: "gray",
+    marginTop: 8,
+    color: "#666",
+  },
+  userCardDescription: {
+    fontSize: 14,
+    marginTop: 8,
+    color: "#666",
   },
   userCardImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 25,
-    marginTop: 10,
+    width: "100%",
+    height: 180,
+    resizeMode: "cover",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   labelsContainer: {
     flexDirection: "row",
-    marginTop: 6,
+    marginTop: 10,
   },
-  labelText: {
+  labelContainer: {
     backgroundColor: "#e0e0e0",
     padding: 5,
     marginRight: 5,
     borderRadius: 5,
+  },
+  labelText: {
     fontSize: 12,
   },
 });
