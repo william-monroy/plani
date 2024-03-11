@@ -20,9 +20,9 @@ export const PlanCard = ({
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
         <Text style={styles.userCardDate}>
-          {new Date(dateStart?.seconds * 1000).toLocaleDateString()}
+          {new Date(dateStart?.seconds ?? 0 * 1000).toLocaleDateString()}
           {" - "}
-          {new Date(dateEnd?.seconds * 1000).toLocaleDateString()}
+          {new Date(dateEnd?.seconds ?? 0 * 1000).toLocaleDateString()}
         </Text>
         <Text style={styles.userCardDescription}>{description}</Text>
         {labels && (
