@@ -15,7 +15,7 @@ const UsersPage = () => {
     const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
-      console.log("data", await data.docs);
+      // console.log("data", await data.docs);
       setPlanes(
         await data.docs.map((item) => {
           const planData = { ...item.data(), id: item.id } as unknown;
