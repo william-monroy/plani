@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useUserStore } from "@/store/user-store";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "./_infrastructure/firebase";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState<string>("");
@@ -38,6 +39,7 @@ const LoginScreen = () => {
             });
           });
           router.replace("/(tabs)");
+          // console.log("🟠Async Storage:", await AsyncStorage.getAllKeys());
         }
       })
       .catch((err) => {

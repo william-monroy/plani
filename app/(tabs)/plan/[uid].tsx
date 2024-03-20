@@ -43,7 +43,7 @@ export default function PlanScreen() {
           </BlurView>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setLiked(!liked)}>
-          <BlurView intensity={100} style={styles.blurContainer}>
+          <BlurView intensity={60} style={styles.blurContainer} tint="dark">
             <Ionicons
               name={liked ? "heart" : "heart-outline"}
               size={24}
