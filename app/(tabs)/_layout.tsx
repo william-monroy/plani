@@ -1,5 +1,5 @@
 import { Tabs, router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { Text } from "react-native";
 import { Octicons } from "@expo/vector-icons";
@@ -7,12 +7,22 @@ import { Octicons } from "@expo/vector-icons";
 const TabsLayout = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  getAuth().onAuthStateChanged((user) => {
-    setIsLoading(false);
-    if (!user) {
-      router.replace("/landing");
-    }
-  });
+  // const update = useUserStore((state) => state.update);
+
+  const checkUser = async () => {
+    console.log("🔴authState");
+    getAuth().onAuthStateChanged(async (user) => {
+      console.log("user:", user);
+      setIsLoading(false);
+      if (!user) {
+        router.replace("/landing");
+      }
+    });
+  };
+
+  useEffect(() => {
+    checkUser();
+  }, []);
 
   if (isLoading) return <Text>Loading...</Text>;
 
@@ -26,6 +36,16 @@ const TabsLayout = () => {
           tabBarIcon: ({ focused }) => (
             <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="plan/[uid]"
+        options={{
+            headerShown: false,
+            tabBarStyle:{
+                display:"none",
+            },
+            href:null
         }}
       />
       <Tabs.Screen

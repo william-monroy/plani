@@ -3,15 +3,44 @@ import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useUserStore } from "@/store/user-store";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "./_infrastructure/firebase";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
+  const update = useUserStore((state) => state.update);
+
   const handleLogin = async () => {
     signInWithEmailAndPassword(getAuth(), email, password)
-      .then((user) => {
-        if (user) router.replace("/(tabs)");
+      .then(async (user: any) => {
+        if (user) {
+          console.log("user:", user.user.uid);
+          const uid = await user.user.uid;
+          const q = query(collection(db, "Usuarios"), where("uid", "==", uid));
+          await getDocs(q).then((response) => {
+            response.docs.map(async (data) => {
+              console.log(await data.data());
+              update({
+                email: data.data().email,
+                labels: data.data().labels,
+                registered: data.data().registered,
+                uid: data.data().uid,
+                firstName: data.data().firstName,
+                lastName: data.data().lastName,
+                dateBirth: data.data().dateBirth,
+                score: data.data().score,
+                direcciones: data.data().direcciones,
+                gender: data.data().gender,
+              });
+            });
+          });
+          router.replace("/(tabs)");
+          // console.log("🟠Async Storage:", await AsyncStorage.getAllKeys());
+        }
       })
       .catch((err) => {
         alert(err?.message);
