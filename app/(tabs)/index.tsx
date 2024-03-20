@@ -26,12 +26,14 @@ const HomePage = () => {
           return planData as Plan;
         })
       );
+      console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
     });
   };
 
   useEffect(() => {
     getData();
+    console.log("re-render");
   }, []);
 
   return (
