@@ -1,19 +1,31 @@
 import { Plan } from "@/types/Plan.type";
 import { Image } from "expo-image";
+import { router } from "expo-router";
+import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export const PlanCard = ({
-  name,
-  picture,
-  dateEnd,
-  dateStart,
-  description,
-  guests,
-  labels,
-  score,
-}: Plan) => {
+export const PlanCard = (props: Plan) => {
+  const {
+    uid,
+    name,
+    picture,
+    dateEnd,
+    dateStart,
+    description,
+    guests,
+    labels,
+    score,
+  } = props;
+
+  useEffect(() => {
+    console.log("PlanCard props:", props);
+  }, []);
+
   return (
-    <TouchableOpacity style={styles.userCardContainer}>
+    <TouchableOpacity
+      style={styles.userCardContainer}
+      onPress={() => router.push(`/plan/${uid}`)}
+    >
       {picture && (
         <Image source={{ uri: picture }} style={styles.userCardImage} />
       )}
