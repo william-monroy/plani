@@ -1,14 +1,23 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, Pressable, TouchableOpacity, TextInput, Platform, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  TouchableOpacity,
+  TextInput,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, updateDoc } from "firebase/firestore";
 import { db } from "../_infrastructure/firebase";
 
 import { useUserStore } from "@/store/user-store";
-
 
 const UsersPage = () => {
   const insets = useSafeAreaInsets();
@@ -16,7 +25,9 @@ const UsersPage = () => {
   const [dateStart, setDateStart] = useState<Date>(new Date());
   const [dateEnd, setDateEnd] = useState<Date>(new Date());
   const [name, setName] = useState<string>("Añade un título...");
-  const [description, setDescription] = useState<string>("Añade una descripción...");
+  const [description, setDescription] = useState<string>(
+    "Añade una descripción..."
+  );
   const [showDatePickerStart, setShowDatePickerStart] = useState(false);
   const [showDatePickerEnd, setShowDatePickerEnd] = useState(false);
 
@@ -66,9 +77,10 @@ const UsersPage = () => {
 
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission denied');
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission denied");
         return;
       }
 
@@ -89,30 +101,36 @@ const UsersPage = () => {
 
   const addPlan = async () => {
     const { uid } = useUserStore.getState();
-    const userId = uid; // NO FUNCIONA EL UID
+    const userId = uid;
     try {
-        const selectedLabels = labels
-          .filter((label) => label.value === true)
-          .map((label) => label.name);
-        const docRef = await addDoc(collection(db, "Planes"), {
-          // FALTA AÑADIR DIRECCION, COORDENADAS Y CREAR LA VALORACION IMAGINO
-          coordinates: [],
-          dateEnd: dateEnd,
-          dateStart: dateStart,
-          description: description,
-          guests: [],
-          idAdmin: userId,
-          idDireccion: "",
-          idValoracion: "",
-          labels: selectedLabels,
-          name: name,
-          picture: image,
-          request: [],
-          score: 0,
+      const selectedLabels = labels
+        .filter((label) => label.value === true)
+        .map((label) => label.name);
+      const docRef = await addDoc(collection(db, "Planes"), {
+        // TODO: FALTA AÑADIR DIRECCION, COORDENADAS Y CREAR LA VALORACION IMAGINO
+        coordinates: [],
+        dateEnd: dateEnd,
+        dateStart: dateStart,
+        description: description,
+        guests: [],
+        idAdmin: userId,
+        idDireccion: "",
+        idValoracion: "",
+        labels: selectedLabels,
+        name: name,
+        picture: image,
+        request: [],
+        score: 0,
+      })
+        .then((docRef) => {
+          updateDoc(docRef, { uid: docRef.id });
+        })
+        .catch((error) => {
+          console.error("Error adding plan: ", error);
         });
-        console.log("Plan added from user: ", userId);
-        resetValues(); // NO LOS RESETEA
-        alert("Plan añadido!🥳");
+      // console.log("Plan added from user: ", userId);
+      resetValues(); // NO LOS RESETEA
+      alert("Plan añadido!🥳");
     } catch (error) {
       console.error("Error adding plan: ", error);
     }
@@ -154,248 +172,283 @@ const UsersPage = () => {
       <TouchableOpacity style={styles.userCardContainer} onPress={pickImage}>
         {image ? (
           <Image source={{ uri: image }} style={styles.userCardImage} />
-        ): (
-          <Image source={require("../../assets/plan.jpg")} style={styles.userCardImage} />
-        )
-        }
+        ) : (
+          <Image
+            source={require("../../assets/plan.jpg")}
+            style={styles.userCardImage}
+          />
+        )}
       </TouchableOpacity>
       <TextInput
         style={styles.userCardTitle}
         placeholder="Nombre del plan..."
         onChangeText={setName}
       />
-        <View style={styles.row}>
-          <View style={(styles.rowItem, { alignItems: "flex-start" })}>
-            {Platform.OS === "ios" ? (
-              <DateTimePicker
-                value={dateStart}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) {
-                    setDateStart(selectedDate);
-                    setShowDatePickerStart(false);
-                  }
-                }}
-              />
-            ) : (
-              <Pressable
-                style={[
-                  styles.input,
-                  {
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  },
-                ]}
-                onPress={() => setShowDatePickerStart(true)}
-              >
-                <Text>{dateStart.toDateString()}</Text>
-                {showDatePickerStart && (
-                  <DateTimePicker
-                    value={dateStart}
-                    mode="date"
-                    display="default"
-                    onChange={(event, selectedDate) => {
-                      if (selectedDate) {
-                        setDateStart(selectedDate);
-                        setShowDatePickerStart(false);
-                      }
-                    }}
-                  />
-                )}
-              </Pressable>
-            )}
-          </View>
-          <Text style={styles.userCardDate}>-</Text>
-          <View style={(styles.rowItem, { alignItems: "flex-start" })}>
-            {Platform.OS === "ios" ? (
-              <DateTimePicker
-                value={dateStart}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) {
-                    setDateEnd(selectedDate);
-                    setShowDatePickerEnd(false);
-                  }
-                }}
-              />
-            ) : (
-              <Pressable
-                style={[
-                  styles.input,
-                  {
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  },
-                ]}
-                onPress={() => setShowDatePickerEnd(true)}
-              >
-                <Text>{dateEnd.toDateString()}</Text>
-                {showDatePickerEnd && (
-                  <DateTimePicker
-                    value={dateEnd}
-                    mode="date"
-                    display="default"
-                    onChange={(event, selectedDate) => {
-                      if (selectedDate) {
-                        setDateEnd(selectedDate);
-                        setShowDatePickerEnd(false);
-                      }
-                    }}
-                  />
-                )}
-              </Pressable>
-            )}
-          </View>
+      <View style={styles.row}>
+        <View style={(styles.rowItem, { alignItems: "flex-start" })}>
+          {Platform.OS === "ios" ? (
+            <DateTimePicker
+              value={dateStart}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setDateStart(selectedDate);
+                  setShowDatePickerStart(false);
+                }
+              }}
+            />
+          ) : (
+            <Pressable
+              style={[
+                styles.input,
+                {
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
+              onPress={() => setShowDatePickerStart(true)}
+            >
+              <Text>{dateStart.toDateString()}</Text>
+              {showDatePickerStart && (
+                <DateTimePicker
+                  value={dateStart}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setDateStart(selectedDate);
+                      setShowDatePickerStart(false);
+                    }
+                  }}
+                />
+              )}
+            </Pressable>
+          )}
         </View>
-        <View>
+        <Text style={styles.userCardDate}>-</Text>
+        <View style={(styles.rowItem, { alignItems: "flex-start" })}>
+          {Platform.OS === "ios" ? (
+            <DateTimePicker
+              value={dateStart}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setDateEnd(selectedDate);
+                  setShowDatePickerEnd(false);
+                }
+              }}
+            />
+          ) : (
+            <Pressable
+              style={[
+                styles.input,
+                {
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
+              onPress={() => setShowDatePickerEnd(true)}
+            >
+              <Text>{dateEnd.toDateString()}</Text>
+              {showDatePickerEnd && (
+                <DateTimePicker
+                  value={dateEnd}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setDateEnd(selectedDate);
+                      setShowDatePickerEnd(false);
+                    }
+                  }}
+                />
+              )}
+            </Pressable>
+          )}
+        </View>
+      </View>
+      <View>
         <TextInput
           style={styles.userCardDescription}
           placeholder="Añade una descripción..."
           onChangeText={setDescription}
           multiline={true}
         />
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.row}>
+          <Pressable
+            style={cine ? styles.labelContainerSelected : styles.labelContainer}
+            onPress={() => (cine ? setCine(false) : setCine(true))}
+          >
+            <Text style={styles.labelText}>Cine</Text>
+          </Pressable>
+          <Pressable
+            style={
+              fiesta ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (fiesta ? setFiesta(false) : setFiesta(true))}
+          >
+            <Text style={styles.labelText}>Fiesta</Text>
+          </Pressable>
+          <Pressable
+            style={
+              deporte ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (deporte ? setDeporte(false) : setDeporte(true))}
+          >
+            <Text style={styles.labelText}>Deporte</Text>
+          </Pressable>
         </View>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <View style={styles.row}>
-            <Pressable
-              style={cine ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (cine ? setCine(false) : setCine(true))}
-            >
-              <Text style={styles.labelText}>Cine</Text>
-            </Pressable>
-            <Pressable
-              style={fiesta ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (fiesta ? setFiesta(false) : setFiesta(true))}
-            >
-              <Text style={styles.labelText}>Fiesta</Text>
-            </Pressable>
-            <Pressable
-              style={deporte ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (deporte ? setDeporte(false) : setDeporte(true))}
-            >
-              <Text style={styles.labelText}>Deporte</Text>
-            </Pressable>
-          </View>
-          <View style={styles.row}>
-            <Pressable
-              style={conciertos ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() =>
-                conciertos ? setConciertos(false) : setConciertos(true)
-              }
-            >
-              <Text style={styles.labelText}>Conciertos</Text>
-            </Pressable>
-            <Pressable
-              style={comida ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (comida ? setComida(false) : setComida(true))}
-            >
-              <Text style={styles.labelText}>Gastronomía</Text>
-            </Pressable>
-            <Pressable
-              style={naturaleza ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() =>
-                naturaleza ? setNaturaleza(false) : setNaturaleza(true)
-              }
-            >
-              <Text style={styles.labelText}>Naturaleza</Text>
-            </Pressable>
-          </View>
-          <View style={styles.row}>
-            <Pressable
-              style={teatro ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (teatro ? setTeatro(false) : setTeatro(true))}
-            >
-              <Text style={styles.labelText}>Teatro</Text>
-            </Pressable>
-            <Pressable
-              style={aventura ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (aventura ? setAventura(false) : setAventura(true))}
-            >
-              <Text style={styles.labelText}>Aventura</Text>
-            </Pressable>
-            <Pressable
-              style={eventoDepor ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() =>
-                eventoDepor ? setEventoDepor(false) : setEventoDepor(true)
-              }
-            >
-              <Text style={styles.labelText}>Evento deportivo</Text>
-            </Pressable>
-          </View>
-          <View style={styles.row}>
-            <Pressable
-              style={copas ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (copas ? setCopas(false) : setCopas(true))}
-            >
-              <Text style={styles.labelText}>Ir de copas</Text>
-            </Pressable>
-            <Pressable
-              style={fotografia ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() =>
-                fotografia ? setFotografia(false) : setFotografia(true)
-              }
-            >
-              <Text style={styles.labelText}>Fotografía</Text>
-            </Pressable>
-            <Pressable
-              style={moda ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (moda ? setModa(false) : setModa(true))}
-            >
-              <Text style={styles.labelText}>Moda</Text>
-            </Pressable>
-          </View>
-          <View style={styles.row}>
-            <Pressable
-              style={baile ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (baile ? setBaile(false) : setBaile(true))}
-            >
-              <Text style={styles.labelText}>Baile</Text>
-            </Pressable>
-            <Pressable
-              style={relax ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (relax ? setRelax(false) : setRelax(true))}
-            >
-              <Text style={styles.labelText}>Relax</Text>
-            </Pressable>
-            <Pressable
-              style={cervezas ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (cervezas ? setCervezas(false) : setCervezas(true))}
-            >
-              <Text style={styles.labelText}>Tomar algo</Text>
-            </Pressable>
-          </View>
-          <View style={styles.row}>
-            <Pressable
-              style={viajes ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (viajes ? setViajes(false) : setViajes(true))}
-            >
-              <Text style={styles.labelText}>Viajes</Text>
-            </Pressable>
-            <Pressable
-              style={juegos ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (juegos ? setJuegos(false) : setJuegos(true))}
-            >
-              <Text style={styles.labelText}>Juegos</Text>
-            </Pressable>
-            <Pressable
-              style={cafe ? styles.labelContainerSelected: styles.labelContainer}
-              onPress={() => (cafe ? setCafe(false) : setCafe(true))}
-            >
-              <Text style={styles.labelText}>Tomar un café</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
+        <View style={styles.row}>
+          <Pressable
+            style={
+              conciertos ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() =>
+              conciertos ? setConciertos(false) : setConciertos(true)
+            }
+          >
+            <Text style={styles.labelText}>Conciertos</Text>
+          </Pressable>
+          <Pressable
+            style={
+              comida ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (comida ? setComida(false) : setComida(true))}
+          >
+            <Text style={styles.labelText}>Gastronomía</Text>
+          </Pressable>
+          <Pressable
+            style={
+              naturaleza ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() =>
+              naturaleza ? setNaturaleza(false) : setNaturaleza(true)
+            }
+          >
+            <Text style={styles.labelText}>Naturaleza</Text>
+          </Pressable>
+        </View>
+        <View style={styles.row}>
+          <Pressable
+            style={
+              teatro ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (teatro ? setTeatro(false) : setTeatro(true))}
+          >
+            <Text style={styles.labelText}>Teatro</Text>
+          </Pressable>
+          <Pressable
+            style={
+              aventura ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (aventura ? setAventura(false) : setAventura(true))}
+          >
+            <Text style={styles.labelText}>Aventura</Text>
+          </Pressable>
+          <Pressable
+            style={
+              eventoDepor
+                ? styles.labelContainerSelected
+                : styles.labelContainer
+            }
+            onPress={() =>
+              eventoDepor ? setEventoDepor(false) : setEventoDepor(true)
+            }
+          >
+            <Text style={styles.labelText}>Evento deportivo</Text>
+          </Pressable>
+        </View>
+        <View style={styles.row}>
+          <Pressable
+            style={
+              copas ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (copas ? setCopas(false) : setCopas(true))}
+          >
+            <Text style={styles.labelText}>Ir de copas</Text>
+          </Pressable>
+          <Pressable
+            style={
+              fotografia ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() =>
+              fotografia ? setFotografia(false) : setFotografia(true)
+            }
+          >
+            <Text style={styles.labelText}>Fotografía</Text>
+          </Pressable>
+          <Pressable
+            style={moda ? styles.labelContainerSelected : styles.labelContainer}
+            onPress={() => (moda ? setModa(false) : setModa(true))}
+          >
+            <Text style={styles.labelText}>Moda</Text>
+          </Pressable>
+        </View>
+        <View style={styles.row}>
+          <Pressable
+            style={
+              baile ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (baile ? setBaile(false) : setBaile(true))}
+          >
+            <Text style={styles.labelText}>Baile</Text>
+          </Pressable>
+          <Pressable
+            style={
+              relax ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (relax ? setRelax(false) : setRelax(true))}
+          >
+            <Text style={styles.labelText}>Relax</Text>
+          </Pressable>
+          <Pressable
+            style={
+              cervezas ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (cervezas ? setCervezas(false) : setCervezas(true))}
+          >
+            <Text style={styles.labelText}>Tomar algo</Text>
+          </Pressable>
+        </View>
+        <View style={styles.row}>
+          <Pressable
+            style={
+              viajes ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (viajes ? setViajes(false) : setViajes(true))}
+          >
+            <Text style={styles.labelText}>Viajes</Text>
+          </Pressable>
+          <Pressable
+            style={
+              juegos ? styles.labelContainerSelected : styles.labelContainer
+            }
+            onPress={() => (juegos ? setJuegos(false) : setJuegos(true))}
+          >
+            <Text style={styles.labelText}>Juegos</Text>
+          </Pressable>
+          <Pressable
+            style={cafe ? styles.labelContainerSelected : styles.labelContainer}
+            onPress={() => (cafe ? setCafe(false) : setCafe(true))}
+          >
+            <Text style={styles.labelText}>Tomar un café</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
       <View style={styles.container2}>
-      <Pressable style={styles.button} onPress={addPlan}>
-        <Text style={styles.textButton}>Añadir</Text>
-      </Pressable>
+        <Pressable style={styles.button} onPress={addPlan}>
+          <Text style={styles.textButton}>Añadir</Text>
+        </Pressable>
       </View>
     </View>
-)};
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -428,8 +481,8 @@ const styles = StyleSheet.create({
   },
   container2: {
     flex: 1, // Usa flex para que el contenedor se expanda
-    justifyContent: 'center', // Centra los elementos hijos verticalmente
-    alignItems: 'center', // Centra los elementos hijos horizontalmente
+    justifyContent: "center", // Centra los elementos hijos verticalmente
+    alignItems: "center", // Centra los elementos hijos horizontalmente
     paddingVertical: 20,
     paddingHorizontal: 10,
     marginBottom: 40,
@@ -489,12 +542,13 @@ const styles = StyleSheet.create({
   image: {
     width: 200,
     height: 200,
-    resizeMode: 'contain',
+    resizeMode: "contain",
     borderWidth: 2, // Añade un borde con un grosor de 2
-    borderColor: '#ddd', // El color del borde
+    borderColor: "#ddd", // El color del borde
     borderRadius: 10, // Bordes redondeados con un radio de 10
     shadowColor: "#000", // Color de la sombra
-    shadowOffset: { // Offset de la sombra
+    shadowOffset: {
+      // Offset de la sombra
       width: 0,
       height: 2,
     },

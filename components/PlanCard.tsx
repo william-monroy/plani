@@ -1,6 +1,7 @@
 import { Plan } from "@/types/Plan.type";
 import { Image } from "expo-image";
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export const PlanCard = (props: Plan) => {
@@ -15,6 +16,10 @@ export const PlanCard = (props: Plan) => {
     labels,
     score,
   } = props;
+
+  useEffect(() => {
+    console.log("PlanCard props:", props);
+  }, []);
 
   return (
     <TouchableOpacity
