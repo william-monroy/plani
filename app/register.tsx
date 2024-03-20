@@ -116,6 +116,7 @@ const RegisterScreen = () => {
                   setShowDatePicker(true);
                   if (selectedDate) {
                     setBirthDate(selectedDate);
+                    setShowDatePicker(false);
                   }
                 }}
               />
@@ -132,6 +133,19 @@ const RegisterScreen = () => {
                 onPress={() => setShowDatePicker(true)}
               >
                 <Text>{birthDate.toDateString()}</Text>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={birthDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setBirthDate(selectedDate);
+                        setShowDatePicker(false);
+                      }
+                    }}
+                  />
+                )}
               </Pressable>
             )}
           </View>

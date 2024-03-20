@@ -72,14 +72,6 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: "700",
   },
-  text: {
-    fontSize: 12,
-    textAlign: "center",
-    marginTop: 10,
-    marginBottom: 50,
-    marginLeft: 20,
-    marginRight: 20,
-  },
 });
 
 export default LandingScreen;
