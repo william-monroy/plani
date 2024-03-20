@@ -23,16 +23,19 @@ const TabsLayout = () => {
         options={{
           headerShown: false,
           title: "Buscar",
-          tabBarIcon: ({ color }) => (
-            <Octicons name="search" size={24} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
           ),
         }}
       />
       <Tabs.Screen
-        name="users"
+        name="newPlan"
         options={{
-          headerTitle: "Mis Planes",
-          title: "Planes",
+          title: "Subir",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="diff-added" size={24} color={focused ? "orange" : "gray"}  />
+          ),
         }}
       />
       <Tabs.Screen
@@ -42,10 +45,13 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="profile"
         options={{
-          headerTitle: "Settings",
-          title: "Settings",
+          headerTitle: "Perfil",
+          title: "Perfil",
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="person" size={24} color={focused ? "orange" : "gray"}  />
+          ),
         }}
       />
     </Tabs>

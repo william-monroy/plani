@@ -253,7 +253,7 @@ const PreferencesScreen = () => {
           </Pressable>
           <Pressable
             style={styles.planButton}
-            onPress={() => (aventura ? setCopas(false) : setCopas(true))}
+            onPress={() => (copas ? setCopas(false) : setCopas(true))}
           >
             <ImageBackground
               source={require("../assets/preferences/copas.jpg")}
