@@ -12,4 +12,5 @@ export interface User {
   score: Number;
   uid: String;
   registered: Date | undefined;
+  avatar: String;
 }

@@ -1,31 +1,61 @@
 import { Image } from "expo-image";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "@/app/_infrastructure/firebase";
 import { Plan } from "@/types/Plan.type";
 import { useEffect, useState } from "react";
+import Rating from "@/components/Rating";
+import { User } from "@/types/User.type";
 
 export default function PlanScreen() {
   const insets = useSafeAreaInsets();
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
   const [liked, setLiked] = useState<boolean>(false);
+  const [guests, setGuests] = useState<User[]>([] as User[]);
 
   const { uid } = useLocalSearchParams();
 
   const getPlanData = async () => {
     const q = query(collection(db, "Planes"), where("uid", "==", uid));
-    await getDocs(q).then((response) => {
-      response.docs.map(async (data) => {
-        console.log(await data.data());
-        setPlanData({} as Plan);
-        setPlanData({ ...(data.data() as Plan) });
+    const querySnapshot: any = await getDocs(q)
+      .then(async (response) => {
+        response.docs.map(async (data) => {
+          console.log(await data.data());
+          setPlanData({} as Plan);
+          setPlanData({ ...(data.data() as Plan) });
+        });
+        const GuestsIds = planData.guests;
+        const guestsData: User[] = [];
+        for (const guestId of GuestsIds) {
+          const docRef = doc(db, "Usuarios", guestId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            guestsData.push(docSnap.data() as User);
+          }
+        }
+        setGuests(guestsData);
+      })
+      .catch((error) => {
+        console.error("Error getting documents: ", error);
       });
-    });
   };
 
   useEffect(() => {
@@ -54,14 +84,33 @@ export default function PlanScreen() {
       </View>
       <View style={styles.spacer} />
       <View style={styles.contentCard}>
-        <Text style={styles.titleCard}>Plan {uid}</Text>
-        <View style={styles.row}>
-          <Text style={styles.score}>0</Text>
-          <Ionicons name="star" size={24} color="#ffce04" />
-        </View>
-        <Link href="/" style={{ color: "blue" }}>
-          Home
-        </Link>
+        <Text style={styles.titleCard}>{planData.name}</Text>
+        <Rating size={24} />
+        <Text style={styles.subTitleCard}>Detalles</Text>
+        <Text style={styles.cardDescription}>{planData.description}</Text>
+        <View style={styles.cardDivider} />
+        <Text style={styles.subTitleCard}>Asistentes</Text>
+        <ScrollView horizontal>
+          {guests.map((guest, index) => (
+            <Image
+              key={index}
+              source={{
+                uri: (guest?.avatar ||
+                  `https://ui-avatars.com/api/?name=${
+                    guest?.firstName.split(" ")[0]
+                  }+${
+                    guest?.lastName.split(" ")[0]
+                  }&background=random&color=fff`) as string,
+              }}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                marginRight: 10,
+              }}
+            />
+          ))}
+        </ScrollView>
       </View>
     </View>
   );
@@ -111,14 +160,22 @@ const styles = StyleSheet.create({
   titleCard: {
     fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 10,
   },
-  row: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
+  subTitleCard: {
+    marginTop: 10,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
-  score: {
+  cardDescription: {
     fontSize: 16,
-    marginRight: 10,
+    lineHeight: 24,
+    marginBottom: 10,
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: "#e0e0e0",
+    marginVertical: 20,
   },
 });
