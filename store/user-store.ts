@@ -20,6 +20,7 @@ export const useUserStore = create<UserStore>()(
       score: 0,
       uid: "",
       registered: undefined,
+      avatar: "",
 
       update: (user) => set((state) => ({ ...state, ...user })),
     }),
