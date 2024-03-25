@@ -47,6 +47,9 @@ const RegisterScreen = () => {
               labels: [],
               direcciones: [],
               score: 0,
+              avatar: `https://ui-avatars.com/api/?name=${
+                firstName.split(" ")[0]
+              }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
             // console.log("Document written with ID: ", docRef.id);
             update({
@@ -57,6 +60,9 @@ const RegisterScreen = () => {
               gender: gender,
               firstName: firstName,
               lastName: lastName,
+              avatar: `https://ui-avatars.com/api/?name=${
+                firstName.split(" ")[0]
+              }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
           } catch (e) {
             console.error("Error adding document: ", e);

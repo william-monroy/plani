@@ -15,13 +15,16 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { addDoc, collection, updateDoc } from "firebase/firestore";
-import { db } from "../_infrastructure/firebase";
+import { db, storage } from "../_infrastructure/firebase";
 
 import { useUserStore } from "@/store/user-store";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import Button from "@/components/Button";
 
 const UsersPage = () => {
   const insets = useSafeAreaInsets();
   const [image, setImage] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [dateStart, setDateStart] = useState<Date>(new Date());
   const [dateEnd, setDateEnd] = useState<Date>(new Date());
   const [name, setName] = useState<string>("Añade un título...");
@@ -49,6 +52,9 @@ const UsersPage = () => {
   const [juegos, setJuegos] = useState(false);
   const [viajes, setViajes] = useState(false);
   const [cafe, setCafe] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+
   const labels = [
     { name: "cine", value: cine },
     { name: "fiesta", value: fiesta },
@@ -106,30 +112,80 @@ const UsersPage = () => {
       const selectedLabels = labels
         .filter((label) => label.value === true)
         .map((label) => label.name);
-      const docRef = await addDoc(collection(db, "Planes"), {
-        // TODO: FALTA AÑADIR DIRECCION, COORDENADAS Y CREAR LA VALORACION IMAGINO
-        coordinates: [],
-        dateEnd: dateEnd,
-        dateStart: dateStart,
-        description: description,
-        guests: [],
-        idAdmin: userId,
-        idDireccion: "",
-        idValoracion: "",
-        labels: selectedLabels,
-        name: name,
-        picture: image,
-        request: [],
-        score: 0,
-      })
-        .then((docRef) => {
-          updateDoc(docRef, { uid: docRef.id });
-        })
-        .catch((error) => {
-          console.error("Error adding plan: ", error);
+
+      try {
+        const uri = image as string;
+        const blob = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            resolve(xhr.response);
+          };
+          xhr.onerror = function (e) {
+            reject(new TypeError("Network request failed"));
+          };
+          xhr.responseType = "blob";
+          xhr.open("GET", uri, true);
+          xhr.send(null);
         });
+        const filename = uri.substring(uri.lastIndexOf("/") + 1);
+        const storageRef = ref(storage, `planes/${userId}/${filename}`);
+        const uploadTask = uploadBytesResumable(storageRef, blob as Blob);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + Math.round(progress) + "% done");
+            switch (snapshot.state) {
+              case "paused":
+                console.log("Upload is paused");
+                break;
+              case "running":
+                console.log("Upload is running");
+                break;
+            }
+          },
+          (error) => {
+            console.error("Error uploading image: ", error);
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(
+              async (downloadURL) => {
+                console.log("File available at", downloadURL);
+                setImageUrl(downloadURL);
+                const docRef = await addDoc(collection(db, "Planes"), {
+                  // TODO: FALTA AÑADIR DIRECCION, COORDENADAS Y CREAR LA VALORACION IMAGINO
+                  coordinates: [],
+                  dateEnd: dateEnd,
+                  dateStart: dateStart,
+                  description: description,
+                  guests: [],
+                  idAdmin: userId,
+                  idDireccion: "",
+                  idValoracion: "",
+                  labels: selectedLabels,
+                  name: name,
+                  picture: downloadURL,
+                  request: [],
+                  score: 0,
+                })
+                  .then((docRef) => {
+                    updateDoc(docRef, { uid: docRef.id });
+                  })
+                  .catch((error) => {
+                    console.error("Error adding plan: ", error);
+                  });
+              }
+            );
+          }
+        );
+      } catch (error) {
+        console.error("Error uploading image: ", error);
+      }
+
       // console.log("Plan added from user: ", userId);
-      resetValues(); // NO LOS RESETEA
+      resetValues(); // * NO LOS RESETEA ->  Si funciona pero tarda un poco en refrescar la vista
       alert("Plan añadido!🥳");
     } catch (error) {
       console.error("Error adding plan: ", error);
@@ -170,6 +226,7 @@ const UsersPage = () => {
         <Text style={styles.title}>Añade un nuevo plan!</Text>
       </View>
       <TouchableOpacity style={styles.userCardContainer} onPress={pickImage}>
+        <Text style={styles.overlayText}>Selecciona una imagen</Text>
         {image ? (
           <Image source={{ uri: image }} style={styles.userCardImage} />
         ) : (
@@ -445,6 +502,16 @@ const UsersPage = () => {
         <Pressable style={styles.button} onPress={addPlan}>
           <Text style={styles.textButton}>Añadir</Text>
         </Pressable>
+        {/* <Button
+          title="Añadir"
+          onPress={addPlan}
+          disabled={true}
+          loading={false}
+          variant="filled"
+          size="small"
+          rounded={true}
+          fullWidth={false}
+        /> */}
       </View>
     </View>
   );
@@ -556,7 +623,16 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84, // Radio de difusión de la sombra
     elevation: 5, // Elevación para Android que también añade una sombra
   },
-
+  overlayText: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -100 }, { translateY: -10 }],
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ffffffcf",
+    zIndex: 1,
+  },
   userCardContainer: {
     display: "flex",
     flexDirection: "column",
@@ -564,8 +640,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     width: "100%",
+    height: 180,
     marginBottom: 15,
-    paddingBottom: 10,
+    position: "relative",
+    zIndex: 1,
   },
   userCardTitle: {
     fontSize: 20,
@@ -587,10 +665,11 @@ const styles = StyleSheet.create({
   },
   userCardImage: {
     width: "100%",
-    height: 180,
+    height: "100%",
+    margin: 0,
+    padding: 0,
     resizeMode: "cover",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderRadius: 10,
   },
   labelsContainer: {
     flexDirection: "row",
