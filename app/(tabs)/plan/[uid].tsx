@@ -34,17 +34,18 @@ export default function PlanScreen() {
   const { uid } = useLocalSearchParams();
 
   const getPlanData = async () => {
-    const q = query(collection(db, "Planes"), where("uid", "==", uid));
-    const querySnapshot: any = await getDocs(q)
-      .then(async (response) => {
-        response.docs.map(async (data) => {
-          console.log(await data.data());
-          setPlanData({} as Plan);
-          setPlanData({ ...(data.data() as Plan) });
-        });
-        const GuestsIds = planData.guests;
+    try {
+      const q = query(collection(db, "Planes"), where("uid", "==", uid));
+      const querySnapshot = await getDocs(q);
+      const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
+  
+      if (plans.length > 0) {
+        const planData = plans[0];
+        console.log(planData);
+        setPlanData(planData);
+  
         const guestsData: User[] = [];
-        for (const guestId of GuestsIds) {
+        for (const guestId of planData.guests) {
           const docRef = doc(db, "Usuarios", guestId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
@@ -52,11 +53,38 @@ export default function PlanScreen() {
           }
         }
         setGuests(guestsData);
-      })
-      .catch((error) => {
-        console.error("Error getting documents: ", error);
-      });
+      }
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+    }
   };
+  
+
+  // const getPlanData = async () => {
+  //   const q = query(collection(db, "Planes"), where("uid", "==", uid));
+  //   const querySnapshot: any = await getDocs(q)
+  //     .then(async (response) => {
+  //       response.docs.map(async (data) => {
+  //         console.log(await data.data());
+  //         setPlanData({} as Plan);
+  //         setPlanData({ ...(data.data() as Plan) });
+  //       });
+  //       const GuestsIds = planData.guests;
+  //       const guestsData: User[] = [];
+  //       for (const guestId of GuestsIds) {
+  //         const docRef = doc(db, "Usuarios", guestId);
+  //         const docSnap = await getDoc(docRef);
+  //         if (docSnap.exists()) {
+  //           guestsData.push(docSnap.data() as User);
+  //         }
+  //       }
+  //       console.log(guestsData);
+  //       setGuests(guestsData);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error getting documents: ", error);
+  //     });
+  // };
 
   useEffect(() => {
     setPlanData({} as Plan);
@@ -89,27 +117,30 @@ export default function PlanScreen() {
         <Text style={styles.subTitleCard}>Detalles</Text>
         <Text style={styles.cardDescription}>{planData.description}</Text>
         <View style={styles.cardDivider} />
-        <Text style={styles.subTitleCard}>Asistentes</Text>
+        <Text style={styles.subTitleCard}>Asistentes </Text>
+       
         <ScrollView horizontal>
-          {guests.map((guest, index) => (
-            <Image
-              key={index}
-              source={{
-                uri: (guest?.avatar ||
-                  `https://ui-avatars.com/api/?name=${
-                    guest?.firstName.split(" ")[0]
-                  }+${
-                    guest?.lastName.split(" ")[0]
-                  }&background=random&color=fff`) as string,
-              }}
-              style={{
-                width: 50,
-                height: 50,
-                borderRadius: 25,
-                marginRight: 10,
-              }}
-            />
-          ))}
+          {guests.map((guest, index) => {
+            return (
+              <Image
+                key={index}
+                source={{
+                  uri: (guest?.avatar ||
+                    `https://ui-avatars.com/api/?name=${
+                      guest?.firstName.split(" ")[0]
+                    }+${
+                      guest?.lastName.split(" ")[0]
+                    }&background=random&color=fff`) as string,
+                }}
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 25,
+                  marginRight: 10,
+                }}
+              />
+            );
+          })}
         </ScrollView>
       </View>
     </View>
