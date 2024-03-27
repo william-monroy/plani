@@ -32,9 +32,9 @@ export const PlanCard = (props: Plan) => {
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
         <Text style={styles.userCardDate}>
-          {new Date(dateStart?.seconds ?? 0 * 1000).toLocaleDateString()}
+          {new Date((dateStart?.seconds as number) * 1000).toLocaleDateString()}
           {" - "}
-          {new Date(dateEnd?.seconds ?? 0 * 1000).toLocaleDateString()}
+          {new Date((dateEnd?.seconds as number) * 1000).toLocaleDateString()}
         </Text>
         <Text style={styles.userCardDescription}>{description}</Text>
         {labels && (

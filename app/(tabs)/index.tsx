@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
   plans: {
     display: "flex",
     gap: 10,
+    height: "90%",
   },
 });
 
