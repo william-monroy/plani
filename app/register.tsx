@@ -84,7 +84,7 @@ const RegisterScreen = () => {
         style={[{ paddingTop: insets.top }, styles.gradient]}
       >
         <Text style={styles.title}>Registrate 🌱</Text>
-        <Text style={styles.label}>Nombres</Text>
+        <Text style={styles.label}>Nombre</Text>
         <TextInput
           style={styles.input}
           placeholder="Ingrese su nombre(s)"

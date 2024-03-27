@@ -172,6 +172,8 @@ const UsersPage = () => {
                 })
                   .then((docRef) => {
                     updateDoc(docRef, { uid: docRef.id });
+                    resetValues(); // * NO LOS RESETEA ->  Si funciona pero tarda un poco en refrescar la vista
+                    alert("Plan añadido!🥳");
                   })
                   .catch((error) => {
                     console.error("Error adding plan: ", error);
@@ -185,8 +187,6 @@ const UsersPage = () => {
       }
 
       // console.log("Plan added from user: ", userId);
-      resetValues(); // * NO LOS RESETEA ->  Si funciona pero tarda un poco en refrescar la vista
-      alert("Plan añadido!🥳");
     } catch (error) {
       console.error("Error adding plan: ", error);
     }
@@ -196,8 +196,8 @@ const UsersPage = () => {
     setImage(null);
     setDateStart(new Date());
     setDateEnd(new Date());
-    setName("Añade un título...");
-    setDescription("Añade una descripción...");
+    setName("");
+    setDescription("");
     setShowDatePickerStart(false);
     setShowDatePickerEnd(false);
     setCine(false);
@@ -218,6 +218,7 @@ const UsersPage = () => {
     setJuegos(false);
     setViajes(false);
     setCafe(false);
+
   };
 
   return (
@@ -240,6 +241,7 @@ const UsersPage = () => {
         style={styles.userCardTitle}
         placeholder="Nombre del plan..."
         onChangeText={setName}
+        id="nombre"
       />
       <View style={styles.row}>
         <View style={(styles.rowItem, { alignItems: "flex-start" })}>
@@ -330,10 +332,13 @@ const UsersPage = () => {
       </View>
       <View>
         <TextInput
+          id="descripcion"
           style={styles.userCardDescription}
           placeholder="Añade una descripción..."
           onChangeText={setDescription}
           multiline={true}
+          scrollEnabled={true}
+          numberOfLines={4}
         />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
