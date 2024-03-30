@@ -19,7 +19,7 @@ import { db, storage } from "../_infrastructure/firebase";
 
 import { useUserStore } from "@/store/user-store";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import Button from "@/components/Button";
+//import Button from "@/components/Button";
 
 const UsersPage = () => {
   const insets = useSafeAreaInsets();
@@ -82,6 +82,7 @@ const UsersPage = () => {
   }, []);
 
   const pickImage = async () => {
+    //console.log("------>" + useUserStore.getState().uid);
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -667,6 +668,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
     color: "#666",
+    height: 100, // Establece una altura fija para probar el desplazamiento
+    maxHeight: 200, // Opcional: Ajusta según sea necesario para tu diseño
   },
   userCardImage: {
     width: "100%",
