@@ -61,6 +61,7 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="user/[id]"
         options={{
+          headerShown: false,
           href: null,
         }}
       />

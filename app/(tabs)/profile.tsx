@@ -1,38 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import {
   collection,
   doc,
   getDoc,
-  getDocs,
-  addDoc,
   updateDoc,
-  query,
-  where,
   onSnapshot } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db, storage } from "../_infrastructure/firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { View, Button, Text, Image, FlatList, StyleSheet, Pressable, TouchableOpacity, Dimensions, ScrollView } from "react-native";
+import { View, Text, Image, StyleSheet, Pressable, TouchableOpacity, Dimensions, ScrollView } from "react-native";
 import { useUserStore } from "@/store/user-store";
 import { User } from "@/types/User.type";
 import * as ImagePicker from "expo-image-picker";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { Plan } from "@/types/Plan.type";
 import { PlanCard } from "@/components/PlanCard";
+import Rating from "@/components/UserRating";
 
-
-
-
-
-
-
-
-export const SettingsPage = () => {
-  // const { firstName, email } = useUserStore.getState();
+export const ProfilePage = () => {
+  const { avatar } = useUserStore.getState();
   const [user, setUser] = useState<User>({} as User);
   const [refreshData, setRefreshData] = useState(0); // Añade este estado
-  const [image, setImage] = useState<string>("" as string); // Añade este estado
+  const [image, setImage] = useState<string>(avatar as string); // Añade este estado
   const [index, setIndex] = useState(0);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [planes, setPlanes] = useState<Plan[]>([]);
@@ -57,20 +47,32 @@ export const SettingsPage = () => {
           <Text>Loading users...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
-            {planes.map((plan: Plan, key: number) => (
+            {planes
+              .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+              .map((plan: Plan, key: number) => (
               <PlanCard key={key} {...plan} />
             ))}
           </ScrollView>
         )}
       </View>
-      {/* Aquí puedes añadir la lógica para mostrar los planes publicados por el usuario */}
     </View>
   );
 
   const JoinedPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
-      <Text>Planes a los que me he unido</Text>
-      {/* Aquí puedes añadir la lógica para mostrar los planes a los que el usuario se ha unido */}
+      <View style={styles.container2_index}>
+        {isLoading ? (
+          <Text>Loading users...</Text>
+        ) : (
+          <ScrollView style={styles.plans_index}>
+          {planes
+            .filter((plan: Plan) => plan.guests.includes(user.uid as string))
+            .map((plan: Plan, key: number) => (
+              <PlanCard key={key} {...plan} />
+            ))}
+          </ScrollView>
+        )}
+        </View>
     </View>
   );
 
@@ -115,15 +117,16 @@ export const SettingsPage = () => {
       });
 
       if (!result.canceled) {
+        console.log(result.assets[0].uri)
         setImage(result.assets[0].uri);
-        updatePlan();
+        updateUser();
       }
     } catch (error) {
       console.error("Error picking image: ", error);
     }
   };
 
-  const updatePlan = async () => {
+  const updateUser = async () => {
     const userId = user.uid;
     try {
       const uri = image as string;
@@ -161,20 +164,13 @@ export const SettingsPage = () => {
         (error) => {
           console.error("Error uploading image: ", error);
         },
-
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(
             async (downloadURL) => {
               console.log("File available at", downloadURL);
               setImageUrl(downloadURL);
               const docRef = doc(db, "Usuarios", userId as string);
-                updateDoc(docRef, { avatar: downloadURL })
-                .then(() => {
-                  setRefreshData((prev) => prev + 1);
-                })
-                .catch((error) => {
-                  console.error("Error updating document: ", error);
-                });
+              updateDoc(docRef, { avatar: imageUrl })
             }
           );
         }
@@ -195,6 +191,7 @@ export const SettingsPage = () => {
           userData = docSnap.data() as User;
         }
         setUser(userData);
+        setImage(userData.avatar as string);
         console.log(user)
       } catch (error) {
       console.error("Error getting documents: ", error);
@@ -202,8 +199,8 @@ export const SettingsPage = () => {
   };
 
   useEffect(() => {
-    getData();
     getUserData();
+    getData();
   }, [uid, refreshData]);
 
   return (
@@ -212,11 +209,13 @@ export const SettingsPage = () => {
       {/* Foto y nombre del usuario */}
       <View style={styles.userInfo}>
         <TouchableOpacity onPress={pickImage}>
-          <Image source={{ uri: user.avatar as string }} style={styles.userPhoto} />
+          <Image source={{ uri: image as string }} style={styles.userPhoto} />
         </TouchableOpacity>
-        <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
+        <View style={{'gap': 10, 'alignItems': 'center'}}>
+          <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
+          <Rating size={20} value={user.score as number} />
+        </View>
       </View>
-
 
       {/* Botón de Cerrar sesión */}
       <View style={styles.container2}>
@@ -329,4 +328,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SettingsPage;
+export default ProfilePage;

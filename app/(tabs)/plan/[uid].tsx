@@ -89,8 +89,6 @@ export default function PlanScreen() {
   const getPlanData = async () => {
     const userId = useUserStore.getState().uid;
     try {
-      // console.log("--------->" + uid);
-      // console.log("--------->" + useUserStore.getState().uid);
       const q = query(collection(db, "Planes"), where("uid", "==", uid));
       const querySnapshot = await getDocs(q);
       const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
@@ -140,29 +138,29 @@ export default function PlanScreen() {
             <Ionicons name="arrow-back" size={24} color="#fffdfd" />
           </BlurView>
         </TouchableOpacity>
-        {/* <TouchableOpacity onPress={() => router.push(`/perfil/${admin?.uid}`)}> */}
-        {admin ? (
-          <Image
-            source={{ uri: (admin?.avatar) as string }}
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              marginRight: 10,
-
-            }}/>
-          ) : (
+        <TouchableOpacity onPress={() => router.push(`/user/${admin?.uid}`)}>
+          {admin ? (
             <Image
-            source={require("../../../assets/avatar.jpg")}
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              marginRight: 10,
-            }}
-          />
-          )}
-        {/* </TouchableOpacity> */}
+              source={{ uri: (admin?.avatar) as string }}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                marginRight: 10,
+
+              }}/>
+            ) : (
+              <Image
+              source={require("../../../assets/avatar.jpg")}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                marginRight: 10,
+              }}
+            />
+            )}
+        </TouchableOpacity>
         {/* <TouchableOpacity onPress={() => setLiked(!liked)}>
           <BlurView intensity={60} style={styles.blurContainer} tint="dark">
             <Ionicons
@@ -200,36 +198,40 @@ export default function PlanScreen() {
         <ScrollView horizontal>
           {guests.map((guest, index) => {
             return (
-              <Image
-                key={index}
-                source={{
-                  uri: (guest?.avatar ||
-                    `https://ui-avatars.com/api/?name=${
-                      guest?.firstName.split(" ")[0]
-                    }+${
-                      guest?.lastName.split(" ")[0]
-                    }&background=random&color=fff`) as string,
-                }}
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 25,
-                  marginRight: 10,
-                }}
-              />
+              <TouchableOpacity key={index} onPress={() => router.push(`/user/${guest?.uid}`)}>
+                <Image
+                  key={`guest-avatar-${index}`}
+                  source={{
+                    uri: (guest?.avatar ||
+                      `https://ui-avatars.com/api/?name=${
+                        guest?.firstName.split(" ")[0]
+                      }+${
+                        guest?.lastName.split(" ")[0]
+                      }&background=random&color=fff`) as string,
+                  }}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 25,
+                    marginRight: 10,
+                  }}
+                />
+              </TouchableOpacity>
             );
           })}
         </ScrollView>
         <View style={styles.container2}>
-          {planAdded == false ? (
-            <Pressable style={styles.button} onPress={nuevoAsistente}>
-              <Text style={styles.textButton}>Apuntarme</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={styles.button} onPress={borrarAsistente}>
-              <Text style={styles.textButton}>Salir del plan</Text>
-            </Pressable>
-          )}
+          {planData.idAdmin != useUserStore.getState().uid ? (
+            planAdded === false ? (
+              <Pressable style={styles.button} onPress={nuevoAsistente}>
+                <Text style={styles.textButton}>Apuntarme</Text>
+              </Pressable>
+            ) : (
+              <Pressable style={styles.button} onPress={borrarAsistente}>
+                <Text style={styles.textButton}>Salir del plan</Text>
+              </Pressable>
+            )
+          ) : null}
         </View>
       </View>
       </ScrollView>

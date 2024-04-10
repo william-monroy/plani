@@ -29,7 +29,6 @@ const LoginScreen = () => {
                 labels: data.data().labels,
                 registered: data.data().registered,
                 uid: data.data().uid,
-                
                 firstName: data.data().firstName,
                 lastName: data.data().lastName,
                 dateBirth: data.data().dateBirth,
