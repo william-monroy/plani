@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { Link, router } from "expo-router";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { LinearGradient } from "expo-linear-gradient";
 import { db } from "./_infrastructure/firebase";
 import { Picker } from "@react-native-picker/picker";
@@ -33,13 +33,15 @@ const RegisterScreen = () => {
 
   const handleRegister = async () => {
     createUserWithEmailAndPassword(getAuth(), email, password)
-      .then(async (user) => {
+      .then(async (userCredential) => {
+        const user = userCredential.user;
         if (user) {
+          const userDocRef = doc(db, "Usuarios", user.uid); // Crea una referencia al documento usando el uid del usuario
           try {
-            const docRef = await addDoc(collection(db, "Usuarios"), {
+            await setDoc(userDocRef, {
               email: email,
               registered: new Date(),
-              uid: user.user.uid,
+              uid: user.uid,
               birthDate: birthDate,
               gender: gender,
               firstName: firstName,
@@ -51,11 +53,12 @@ const RegisterScreen = () => {
                 firstName.split(" ")[0]
               }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
+            console.log("user.user.uid: ", user.uid);
             // console.log("Document written with ID: ", docRef.id);
             update({
               email: email,
               registered: new Date(),
-              uid: user.user.uid,
+              uid: user.uid,
               dateBirth: birthDate,
               gender: gender,
               firstName: firstName,
@@ -64,6 +67,7 @@ const RegisterScreen = () => {
                 firstName.split(" ")[0]
               }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
+            console.log("user.user.uid: ", user.uid);
           } catch (e) {
             console.error("Error adding document: ", e);
           }
@@ -84,7 +88,7 @@ const RegisterScreen = () => {
         style={[{ paddingTop: insets.top }, styles.gradient]}
       >
         <Text style={styles.title}>Registrate 🌱</Text>
-        <Text style={styles.label}>Nombres</Text>
+        <Text style={styles.label}>Nombre</Text>
         <TextInput
           style={styles.input}
           placeholder="Ingrese su nombre(s)"

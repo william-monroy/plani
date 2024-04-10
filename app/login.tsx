@@ -15,10 +15,10 @@ const LoginScreen = () => {
   const update = useUserStore((state) => state.update);
 
   const handleLogin = async () => {
+    console.log("saaaaaaaaaaaa: " + useUserStore.getState().uid);
     signInWithEmailAndPassword(getAuth(), email, password)
       .then(async (user: any) => {
         if (user) {
-          console.log("user:", user.user.uid);
           const uid = await user.user.uid;
           const q = query(collection(db, "Usuarios"), where("uid", "==", uid));
           await getDocs(q).then((response) => {
@@ -29,6 +29,7 @@ const LoginScreen = () => {
                 labels: data.data().labels,
                 registered: data.data().registered,
                 uid: data.data().uid,
+                
                 firstName: data.data().firstName,
                 lastName: data.data().lastName,
                 dateBirth: data.data().dateBirth,
