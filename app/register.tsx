@@ -70,7 +70,7 @@ const RegisterScreen = () => {
             console.log("user.user.uid: ", user.uid);
           } catch (e) {
             console.error("Error adding document: ", e);
-          }
+            }
           router.replace("preferences");
         }
       })
