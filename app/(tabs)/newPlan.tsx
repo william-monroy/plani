@@ -19,7 +19,7 @@ import { db, storage } from "../_infrastructure/firebase";
 
 import { useUserStore } from "@/store/user-store";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import Button from "@/components/Button";
+//import Button from "@/components/Button";
 
 const UsersPage = () => {
   const insets = useSafeAreaInsets();
@@ -82,6 +82,7 @@ const UsersPage = () => {
   }, []);
 
   const pickImage = async () => {
+    //console.log("------>" + useUserStore.getState().uid);
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -172,6 +173,8 @@ const UsersPage = () => {
                 })
                   .then((docRef) => {
                     updateDoc(docRef, { uid: docRef.id });
+                    resetValues(); // * NO LOS RESETEA ->  Si funciona pero tarda un poco en refrescar la vista
+                    alert("Plan añadido!🥳");
                   })
                   .catch((error) => {
                     console.error("Error adding plan: ", error);
@@ -185,8 +188,6 @@ const UsersPage = () => {
       }
 
       // console.log("Plan added from user: ", userId);
-      resetValues(); // * NO LOS RESETEA ->  Si funciona pero tarda un poco en refrescar la vista
-      alert("Plan añadido!🥳");
     } catch (error) {
       console.error("Error adding plan: ", error);
     }
@@ -196,8 +197,8 @@ const UsersPage = () => {
     setImage(null);
     setDateStart(new Date());
     setDateEnd(new Date());
-    setName("Añade un título...");
-    setDescription("Añade una descripción...");
+    setName("");
+    setDescription("");
     setShowDatePickerStart(false);
     setShowDatePickerEnd(false);
     setCine(false);
@@ -218,6 +219,7 @@ const UsersPage = () => {
     setJuegos(false);
     setViajes(false);
     setCafe(false);
+
   };
 
   return (
@@ -240,6 +242,7 @@ const UsersPage = () => {
         style={styles.userCardTitle}
         placeholder="Nombre del plan..."
         onChangeText={setName}
+        id="nombre"
       />
       <View style={styles.row}>
         <View style={(styles.rowItem, { alignItems: "flex-start" })}>
@@ -330,10 +333,13 @@ const UsersPage = () => {
       </View>
       <View>
         <TextInput
+          id="descripcion"
           style={styles.userCardDescription}
           placeholder="Añade una descripción..."
           onChangeText={setDescription}
           multiline={true}
+          scrollEnabled={true}
+          numberOfLines={4}
         />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -662,6 +668,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
     color: "#666",
+    height: 100, // Establece una altura fija para probar el desplazamiento
+    maxHeight: 200, // Opcional: Ajusta según sea necesario para tu diseño
   },
   userCardImage: {
     width: "100%",
