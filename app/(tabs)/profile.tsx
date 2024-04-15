@@ -5,15 +5,25 @@ import {
   doc,
   getDoc,
   updateDoc,
-  onSnapshot } from "firebase/firestore";
+  onSnapshot,
+} from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db, storage } from "../_infrastructure/firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { View, Text, Image, StyleSheet, Pressable, TouchableOpacity, Dimensions, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Pressable,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import { useUserStore } from "@/store/user-store";
 import { User } from "@/types/User.type";
 import * as ImagePicker from "expo-image-picker";
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { Plan } from "@/types/Plan.type";
 import { PlanCard } from "@/components/PlanCard";
 import Rating from "@/components/UserRating";
@@ -30,14 +40,14 @@ export const ProfilePage = () => {
 
   //desde aqui
   const [routes] = useState([
-    { key: 'myPlans', title: 'Mis Planes' },
-    { key: 'joinedPlans', title: 'Apuntado' },
+    { key: "myPlans", title: "Mis Planes" },
+    { key: "joinedPlans", title: "Apuntado" },
   ]);
 
-  const initialLayout = { width: Dimensions.get('window').width };
+  const initialLayout = { width: Dimensions.get("window").width };
 
   const MyPlansRoute = () => (
-    <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
+    <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       {/* <Text>Mis Planes</Text> */}
       <View style={styles.container2_index}>
         {/* <Text style={[{ marginBottom: 15 }, styles.subTitle_index]}>
@@ -50,8 +60,8 @@ export const ProfilePage = () => {
             {planes
               .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
               .map((plan: Plan, key: number) => (
-              <PlanCard key={key} {...plan} />
-            ))}
+                <PlanCard key={key} {...plan} />
+              ))}
           </ScrollView>
         )}
       </View>
@@ -59,20 +69,20 @@ export const ProfilePage = () => {
   );
 
   const JoinedPlansRoute = () => (
-    <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
+    <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
           <Text>Loading users...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
-          {planes
-            .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-            .map((plan: Plan, key: number) => (
-              <PlanCard key={key} {...plan} />
-            ))}
+            {planes
+              .filter((plan: Plan) => plan.guests.includes(user.uid as string))
+              .map((plan: Plan, key: number) => (
+                <PlanCard key={key} {...plan} />
+              ))}
           </ScrollView>
         )}
-        </View>
+      </View>
     </View>
   );
 
@@ -97,7 +107,6 @@ export const ProfilePage = () => {
   });
   //hasta aqui
 
-
   const { uid } = useLocalSearchParams();
 
   const pickImage = async () => {
@@ -117,7 +126,7 @@ export const ProfilePage = () => {
       });
 
       if (!result.canceled) {
-        console.log(result.assets[0].uri)
+        console.log(result.assets[0].uri);
         setImage(result.assets[0].uri);
         updateUser();
       }
@@ -165,14 +174,12 @@ export const ProfilePage = () => {
           console.error("Error uploading image: ", error);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(
-            async (downloadURL) => {
-              console.log("File available at", downloadURL);
-              setImageUrl(downloadURL);
-              const docRef = doc(db, "Usuarios", userId as string);
-              updateDoc(docRef, { avatar: imageUrl })
-            }
-          );
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            console.log("File available at", downloadURL);
+            setImageUrl(downloadURL);
+            const docRef = doc(db, "Usuarios", userId as string);
+            updateDoc(docRef, { avatar: imageUrl });
+          });
         }
       );
     } catch (error) {
@@ -183,17 +190,17 @@ export const ProfilePage = () => {
   const getUserData = async () => {
     const userId = useUserStore.getState().uid;
     try {
-        let userData : User = {} as User;
-        const docRef = doc(db, "Usuarios", userId as string);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          console.log("User data:", docSnap.data());
-          userData = docSnap.data() as User;
-        }
-        setUser(userData);
-        setImage(userData.avatar as string);
-        console.log(user)
-      } catch (error) {
+      let userData: User = {} as User;
+      const docRef = doc(db, "Usuarios", userId as string);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        console.log("User data:", docSnap.data());
+        userData = docSnap.data() as User;
+      }
+      setUser(userData);
+      setImage(userData.avatar as string);
+      console.log(user);
+    } catch (error) {
       console.error("Error getting documents: ", error);
     }
   };
@@ -203,23 +210,29 @@ export const ProfilePage = () => {
     getData();
   }, [uid, refreshData]);
 
-  return (
+  const avatarUri = useUserStore.getState().avatar;
 
+  return (
     <View style={styles.container}>
       {/* Foto y nombre del usuario */}
       <View style={styles.userInfo}>
         <TouchableOpacity onPress={pickImage}>
           <Image source={{ uri: image as string }} style={styles.userPhoto} />
         </TouchableOpacity>
-        <View style={{'gap': 10, 'alignItems': 'center'}}>
-          <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
+        <View style={{ gap: 10, alignItems: "center" }}>
+          <Text style={styles.userName}>
+            {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
+          </Text>
           <Rating size={20} value={user.score as number} />
         </View>
       </View>
 
       {/* Botón de Cerrar sesión */}
       <View style={styles.container2}>
-        <Pressable style={styles.button} onPress={async () => await signOut(getAuth())}>
+        <Pressable
+          style={styles.button}
+          onPress={async () => await signOut(getAuth())}
+        >
           <Text style={styles.textButton}>Cerrar sesión</Text>
         </Pressable>
       </View>
@@ -229,7 +242,7 @@ export const ProfilePage = () => {
         renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={initialLayout}
-        renderTabBar={props => (
+        renderTabBar={(props) => (
           <TabBar
             {...props}
             indicatorStyle={styles.indicator}
@@ -248,25 +261,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   scene: {
     flex: 4,
   },
   tabBar: {
-    backgroundColor: 'white', // Fondo blanco para un look minimalista
+    backgroundColor: "white", // Fondo blanco para un look minimalista
     shadowOpacity: 0, // Quitamos cualquier sombra para un diseño más limpio
     elevation: 0, // Eliminamos la elevación en Android
     borderBottomWidth: 1, // Añadimos un borde sutil en la parte inferior
-    borderBottomColor: '#FF9500', // El color del borde es naranja para mantener tu tema
+    borderBottomColor: "#FF9500", // El color del borde es naranja para mantener tu tema
   },
   indicator: {
-    backgroundColor: '#FF9500', // Color del indicador de la pestaña activa en naranja
+    backgroundColor: "#FF9500", // Color del indicador de la pestaña activa en naranja
     height: 3, // Hacemos el indicador un poco más grueso para que destaque
   },
   label: {
-    fontWeight: 'bold', // Texto en negrita para las etiquetas de las pestañas
-    textTransform: 'none', // Mantenemos el caso de texto original sin transformar
+    fontWeight: "bold", // Texto en negrita para las etiquetas de las pestañas
+    textTransform: "none", // Mantenemos el caso de texto original sin transformar
   },
   userInfo: {
     flexDirection: "row",
@@ -277,19 +290,19 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginRight: 20
+    marginRight: 20,
   },
   userName: {
     fontSize: 24,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   label2: {
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 10
+    marginTop: 10,
   },
   info: {
-    fontSize: 16
+    fontSize: 16,
   },
   container2: {
     marginTop: 20, // Ajustamos el margen superior para separarlo de otros elementos
