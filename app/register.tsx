@@ -17,6 +17,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gender, User } from "@/types/User.type";
 import { useUserStore } from "@/store/user-store";
+import Button from "@/components/Button";
 
 const RegisterScreen = () => {
   const insets = useSafeAreaInsets();
@@ -28,10 +29,12 @@ const RegisterScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { update } = useUserStore((state) => state);
 
   const handleRegister = async () => {
+    setIsLoading(true);
     createUserWithEmailAndPassword(getAuth(), email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
@@ -70,13 +73,14 @@ const RegisterScreen = () => {
             console.log("user.user.uid: ", user.uid);
           } catch (e) {
             console.error("Error adding document: ", e);
-            }
+          }
           router.replace("preferences");
         }
       })
       .catch((err) => {
         alert(err?.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -174,9 +178,17 @@ const RegisterScreen = () => {
           </View>
         </View>
 
-        <Pressable style={styles.button} onPress={handleRegister}>
-          <Text style={styles.textButton}>Crear Cuenta</Text>
-        </Pressable>
+        <Button
+          title="Crear Cuenta"
+          onPress={handleRegister}
+          disabled={false}
+          loading={isLoading}
+          variant="filled"
+          size="medium"
+          rounded={false}
+          fullWidth
+        />
+
         <Link href={"/login"} style={styles.text}>
           ¿Ya tienes cuenta? Inicia sesión
         </Link>
