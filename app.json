@@ -10,11 +10,9 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FF9500"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "dev.wimo.plani",
@@ -25,7 +23,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo_plani.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FF9500"
       },
       "permissions": ["READ_EXTERNAL_STORAGE"]
     },
