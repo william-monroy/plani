@@ -19,6 +19,8 @@ import { db, storage } from "../_infrastructure/firebase";
 
 import { useUserStore } from "@/store/user-store";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import Button from "@/components/Button";
+import { activities } from "../../utils/constants";
 //import Button from "@/components/Button";
 
 const UsersPage = () => {
@@ -27,10 +29,8 @@ const UsersPage = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [dateStart, setDateStart] = useState<Date>(new Date());
   const [dateEnd, setDateEnd] = useState<Date>(new Date());
-  const [name, setName] = useState<string>("Añade un título...");
-  const [description, setDescription] = useState<string>(
-    "Añade una descripción..."
-  );
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [showDatePickerStart, setShowDatePickerStart] = useState(false);
   const [showDatePickerEnd, setShowDatePickerEnd] = useState(false);
 
@@ -53,7 +53,7 @@ const UsersPage = () => {
   const [viajes, setViajes] = useState(false);
   const [cafe, setCafe] = useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const labels = [
     { name: "cine", value: cine },
@@ -107,6 +107,7 @@ const UsersPage = () => {
   };
 
   const addPlan = async () => {
+    setIsLoading(true);
     const { uid } = useUserStore.getState();
     const userId = uid;
     try {
@@ -178,6 +179,9 @@ const UsersPage = () => {
                   })
                   .catch((error) => {
                     console.error("Error adding plan: ", error);
+                  })
+                  .finally(() => {
+                    setIsLoading(false);
                   });
               }
             );
@@ -185,11 +189,13 @@ const UsersPage = () => {
         );
       } catch (error) {
         console.error("Error uploading image: ", error);
+        setIsLoading(false);
       }
 
       // console.log("Plan added from user: ", userId);
     } catch (error) {
       console.error("Error adding plan: ", error);
+      setIsLoading(false);
     }
   };
 
@@ -219,16 +225,21 @@ const UsersPage = () => {
     setJuegos(false);
     setViajes(false);
     setCafe(false);
-
   };
 
   return (
     <View style={[{ paddingTop: insets.top }, styles.container]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Añade un nuevo plan!</Text>
+        <Text style={styles.title}>🌱 Añade un nuevo plan!</Text>
       </View>
       <TouchableOpacity style={styles.userCardContainer} onPress={pickImage}>
-        <Text style={styles.overlayText}>Selecciona una imagen</Text>
+        {!image ? (
+          <Text style={styles.overlayText}>Selecciona una imagen</Text>
+        ) : (
+          <Text style={[styles.overlayText, { left: "58%" }]}>
+            Modificar imagen
+          </Text>
+        )}
         {image ? (
           <Image source={{ uri: image }} style={styles.userCardImage} />
         ) : (
@@ -337,6 +348,7 @@ const UsersPage = () => {
           style={styles.userCardDescription}
           placeholder="Añade una descripción..."
           onChangeText={setDescription}
+          value={description}
           multiline={true}
           scrollEnabled={true}
           numberOfLines={4}
@@ -348,7 +360,7 @@ const UsersPage = () => {
             style={cine ? styles.labelContainerSelected : styles.labelContainer}
             onPress={() => (cine ? setCine(false) : setCine(true))}
           >
-            <Text style={styles.labelText}>Cine</Text>
+            <Text style={styles.labelText}>{activities.cine}</Text>
           </Pressable>
           <Pressable
             style={
@@ -356,7 +368,7 @@ const UsersPage = () => {
             }
             onPress={() => (fiesta ? setFiesta(false) : setFiesta(true))}
           >
-            <Text style={styles.labelText}>Fiesta</Text>
+            <Text style={styles.labelText}>{activities.fiesta}</Text>
           </Pressable>
           <Pressable
             style={
@@ -364,7 +376,7 @@ const UsersPage = () => {
             }
             onPress={() => (deporte ? setDeporte(false) : setDeporte(true))}
           >
-            <Text style={styles.labelText}>Deporte</Text>
+            <Text style={styles.labelText}>{activities.deporte}</Text>
           </Pressable>
         </View>
         <View style={styles.row}>
@@ -376,7 +388,7 @@ const UsersPage = () => {
               conciertos ? setConciertos(false) : setConciertos(true)
             }
           >
-            <Text style={styles.labelText}>Conciertos</Text>
+            <Text style={styles.labelText}>{activities.conciertos}</Text>
           </Pressable>
           <Pressable
             style={
@@ -384,7 +396,7 @@ const UsersPage = () => {
             }
             onPress={() => (comida ? setComida(false) : setComida(true))}
           >
-            <Text style={styles.labelText}>Gastronomía</Text>
+            <Text style={styles.labelText}>{activities.comida}</Text>
           </Pressable>
           <Pressable
             style={
@@ -394,7 +406,7 @@ const UsersPage = () => {
               naturaleza ? setNaturaleza(false) : setNaturaleza(true)
             }
           >
-            <Text style={styles.labelText}>Naturaleza</Text>
+            <Text style={styles.labelText}>{activities.naturaleza}</Text>
           </Pressable>
         </View>
         <View style={styles.row}>
@@ -404,7 +416,7 @@ const UsersPage = () => {
             }
             onPress={() => (teatro ? setTeatro(false) : setTeatro(true))}
           >
-            <Text style={styles.labelText}>Teatro</Text>
+            <Text style={styles.labelText}>{activities.teatro}</Text>
           </Pressable>
           <Pressable
             style={
@@ -412,7 +424,7 @@ const UsersPage = () => {
             }
             onPress={() => (aventura ? setAventura(false) : setAventura(true))}
           >
-            <Text style={styles.labelText}>Aventura</Text>
+            <Text style={styles.labelText}>{activities.aventura}</Text>
           </Pressable>
           <Pressable
             style={
@@ -424,7 +436,7 @@ const UsersPage = () => {
               eventoDepor ? setEventoDepor(false) : setEventoDepor(true)
             }
           >
-            <Text style={styles.labelText}>Evento deportivo</Text>
+            <Text style={styles.labelText}>{activities.eventoDepor}</Text>
           </Pressable>
         </View>
         <View style={styles.row}>
@@ -434,7 +446,7 @@ const UsersPage = () => {
             }
             onPress={() => (copas ? setCopas(false) : setCopas(true))}
           >
-            <Text style={styles.labelText}>Ir de copas</Text>
+            <Text style={styles.labelText}>{activities.copas}</Text>
           </Pressable>
           <Pressable
             style={
@@ -444,13 +456,13 @@ const UsersPage = () => {
               fotografia ? setFotografia(false) : setFotografia(true)
             }
           >
-            <Text style={styles.labelText}>Fotografía</Text>
+            <Text style={styles.labelText}>{activities.fotografia}</Text>
           </Pressable>
           <Pressable
             style={moda ? styles.labelContainerSelected : styles.labelContainer}
             onPress={() => (moda ? setModa(false) : setModa(true))}
           >
-            <Text style={styles.labelText}>Moda</Text>
+            <Text style={styles.labelText}>{activities.moda}</Text>
           </Pressable>
         </View>
         <View style={styles.row}>
@@ -460,7 +472,7 @@ const UsersPage = () => {
             }
             onPress={() => (baile ? setBaile(false) : setBaile(true))}
           >
-            <Text style={styles.labelText}>Baile</Text>
+            <Text style={styles.labelText}>{activities.baile}</Text>
           </Pressable>
           <Pressable
             style={
@@ -468,7 +480,7 @@ const UsersPage = () => {
             }
             onPress={() => (relax ? setRelax(false) : setRelax(true))}
           >
-            <Text style={styles.labelText}>Relax</Text>
+            <Text style={styles.labelText}>{activities.relax}</Text>
           </Pressable>
           <Pressable
             style={
@@ -476,7 +488,7 @@ const UsersPage = () => {
             }
             onPress={() => (cervezas ? setCervezas(false) : setCervezas(true))}
           >
-            <Text style={styles.labelText}>Tomar algo</Text>
+            <Text style={styles.labelText}>{activities.cervezas}</Text>
           </Pressable>
         </View>
         <View style={styles.row}>
@@ -486,7 +498,7 @@ const UsersPage = () => {
             }
             onPress={() => (viajes ? setViajes(false) : setViajes(true))}
           >
-            <Text style={styles.labelText}>Viajes</Text>
+            <Text style={styles.labelText}>✈️ Viajes</Text>
           </Pressable>
           <Pressable
             style={
@@ -494,30 +506,31 @@ const UsersPage = () => {
             }
             onPress={() => (juegos ? setJuegos(false) : setJuegos(true))}
           >
-            <Text style={styles.labelText}>Juegos</Text>
+            <Text style={styles.labelText}>🎮 Juegos</Text>
           </Pressable>
           <Pressable
             style={cafe ? styles.labelContainerSelected : styles.labelContainer}
             onPress={() => (cafe ? setCafe(false) : setCafe(true))}
           >
-            <Text style={styles.labelText}>Tomar un café</Text>
+            <Text style={styles.labelText}>☕️ Tomar un café</Text>
           </Pressable>
         </View>
       </ScrollView>
       <View style={styles.container2}>
-        <Pressable style={styles.button} onPress={addPlan}>
+        {/* <Pressable style={styles.button} onPress={addPlan}>
           <Text style={styles.textButton}>Añadir</Text>
-        </Pressable>
-        {/* <Button
+        </Pressable> */}
+        <Button
           title="Añadir"
           onPress={addPlan}
-          disabled={true}
-          loading={false}
+          disabled={description === "" || name === "" || !image}
+          loading={isLoading}
           variant="filled"
           size="small"
           rounded={true}
           fullWidth={false}
-        /> */}
+          style={{ height: 40, marginTop: 20 }}
+        />
       </View>
     </View>
   );

@@ -1,4 +1,5 @@
 import { Plan } from "@/types/Plan.type";
+import { activities } from "@/utils/constants";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useEffect } from "react";
@@ -41,7 +42,9 @@ export const PlanCard = (props: Plan) => {
           <View style={styles.labelsContainer}>
             {labels.map((label: string, index: number) => (
               <View key={index} style={styles.labelContainer}>
-                <Text style={styles.labelText}>{label}</Text>
+                <Text style={styles.labelText}>
+                  {activities[label] || label}
+                </Text>
               </View>
             ))}
           </View>
@@ -89,6 +92,8 @@ const styles = StyleSheet.create({
   },
   labelsContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 5,
     marginTop: 10,
   },
   labelContainer: {
