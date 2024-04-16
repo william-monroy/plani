@@ -17,25 +17,23 @@ const HomePage = () => {
   const { firstName, gender } = useUserStore((state) => state);
 
   const getData = async () => {
-    console.log("getData");
     const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
-      console.log(data.docs);
-      // console.log(first)
       setPlanes(
         await data.docs.map((item) => {
           const planData = { ...item.data(), id: item.id } as unknown;
-          console.log("planData", planData);
           return planData as Plan;
         })
       );
+      console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
     });
   };
 
   useEffect(() => {
     getData();
+    console.log("re-render");
   }, []);
 
   return (
@@ -43,7 +41,7 @@ const HomePage = () => {
       <View style={styles.header}>
         <Text style={styles.title}>
           Bienvenid{gender === "male" ? "o" : gender === "female" ? "a" : "x"}{" "}
-          {firstName} 👋
+          {firstName.split(" ")[0]} 👋
         </Text>
       </View>
       <View style={styles.container2}>
@@ -95,6 +93,7 @@ const styles = StyleSheet.create({
   plans: {
     display: "flex",
     gap: 10,
+    height: "90%",
   },
 });
 

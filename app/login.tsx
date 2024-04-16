@@ -3,19 +3,63 @@ import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useUserStore } from "@/store/user-store";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "./_infrastructure/firebase";
+import Button from "@/components/Button";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const update = useUserStore((state) => state.update);
 
   const handleLogin = async () => {
+    setIsLoading(true);
     signInWithEmailAndPassword(getAuth(), email, password)
-      .then((user) => {
-        if (user) router.replace("/(tabs)");
+      .then(async (user: any) => {
+        if (user) {
+          const uid = await user.user.uid;
+          // console.log(uid, "🟠 UID");
+          try {
+            const q = query(
+              collection(db, "Usuarios"),
+              where("uid", "==", uid)
+            );
+            await getDocs(q).then((response) => {
+              console.log("🟠 RESPONSE", response.docs);
+              if (response.docs.length === 0) {
+                alert("Usuario no encontrado");
+                throw new Error("Usuario no encontrado");
+              }
+              response.docs.map(async (data) => {
+                update({
+                  uid,
+                  email: await data.data().email,
+                  labels: await data.data().labels,
+                  registered: await data.data().registered,
+                  firstName: await data.data().firstName,
+                  lastName: await data.data().lastName,
+                  dateBirth: await data.data().dateBirth,
+                  score: await data.data().score,
+                  direcciones: await data.data().direcciones,
+                  gender: await data.data().gender,
+                  avatar: await data.data().avatar,
+                });
+              });
+            });
+          } catch (error) {
+            console.log("🔴 ERROR", error);
+          }
+          router.replace("/(tabs)");
+          // console.log("🟠Async Storage:", await AsyncStorage.getAllKeys());
+        }
       })
       .catch((err) => {
         alert(err?.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -43,9 +87,16 @@ const LoginScreen = () => {
             secureTextEntry
             onChangeText={(text) => setPassword(text)}
           />
-          <Pressable style={styles.button} onPress={handleLogin}>
-            <Text style={styles.textButton}>Login</Text>
-          </Pressable>
+          <Button
+            title="Login"
+            onPress={handleLogin}
+            disabled={false}
+            loading={isLoading}
+            variant="filled"
+            size="medium"
+            rounded={false}
+            fullWidth
+          />
           <Text style={styles.text} onPress={() => router.push("/register")}>
             Crear una cuenta
           </Text>

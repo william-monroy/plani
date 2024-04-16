@@ -1,35 +1,50 @@
 import { Plan } from "@/types/Plan.type";
+import { activities } from "@/utils/constants";
 import { Image } from "expo-image";
+import { router } from "expo-router";
+import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export const PlanCard = ({
-  name,
-  picture,
-  dateEnd,
-  dateStart,
-  description,
-  guests,
-  labels,
-  score,
-}: Plan) => {
+export const PlanCard = (props: Plan) => {
+  const {
+    uid,
+    name,
+    picture,
+    dateEnd,
+    dateStart,
+    description,
+    guests,
+    labels,
+    score,
+  } = props;
+
+  useEffect(() => {
+    console.log("PlanCard props:", props);
+  }, []);
+
   return (
-    <TouchableOpacity style={styles.userCardContainer}>
+    <TouchableOpacity
+      style={styles.userCardContainer}
+      onPress={() => router.push(`/plan/${uid}`)}
+    >
       {picture && (
         <Image source={{ uri: picture }} style={styles.userCardImage} />
       )}
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
         <Text style={styles.userCardDate}>
-          {new Date(dateStart?.seconds ?? 0 * 1000).toLocaleDateString()}
+          {new Date((dateStart?.seconds as number) * 1000).toLocaleDateString()}
           {" - "}
-          {new Date(dateEnd?.seconds ?? 0 * 1000).toLocaleDateString()}
+          {new Date((dateEnd?.seconds as number) * 1000).toLocaleDateString()}
         </Text>
         <Text style={styles.userCardDescription}>{description}</Text>
         {labels && (
           <View style={styles.labelsContainer}>
             {labels.map((label: string, index: number) => (
               <View key={index} style={styles.labelContainer}>
-                <Text style={styles.labelText}>{label}</Text>
+                <Text style={styles.labelText}>
+                  {activities[label] || label}
+                </Text>
               </View>
             ))}
           </View>
@@ -77,6 +92,8 @@ const styles = StyleSheet.create({
   },
   labelsContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 5,
     marginTop: 10,
   },
   labelContainer: {

@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { Link, router } from "expo-router";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { LinearGradient } from "expo-linear-gradient";
 import { db } from "./_infrastructure/firebase";
 import { Picker } from "@react-native-picker/picker";
@@ -17,6 +17,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gender, User } from "@/types/User.type";
 import { useUserStore } from "@/store/user-store";
+import Button from "@/components/Button";
 
 const RegisterScreen = () => {
   const insets = useSafeAreaInsets();
@@ -28,18 +29,22 @@ const RegisterScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { update } = useUserStore((state) => state);
 
   const handleRegister = async () => {
+    setIsLoading(true);
     createUserWithEmailAndPassword(getAuth(), email, password)
-      .then(async (user) => {
+      .then(async (userCredential) => {
+        const user = userCredential.user;
         if (user) {
+          const userDocRef = doc(db, "Usuarios", user.uid); // Crea una referencia al documento usando el uid del usuario
           try {
-            const docRef = await addDoc(collection(db, "Usuarios"), {
+            await setDoc(userDocRef, {
               email: email,
               registered: new Date(),
-              uid: user.user.uid,
+              uid: user.uid,
               birthDate: birthDate,
               gender: gender,
               firstName: firstName,
@@ -47,17 +52,25 @@ const RegisterScreen = () => {
               labels: [],
               direcciones: [],
               score: 0,
+              avatar: `https://ui-avatars.com/api/?name=${
+                firstName.split(" ")[0]
+              }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
+            console.log("user.user.uid: ", user.uid);
             // console.log("Document written with ID: ", docRef.id);
             update({
               email: email,
               registered: new Date(),
-              uid: user.user.uid,
+              uid: user.uid,
               dateBirth: birthDate,
               gender: gender,
               firstName: firstName,
               lastName: lastName,
+              avatar: `https://ui-avatars.com/api/?name=${
+                firstName.split(" ")[0]
+              }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
+            console.log("user.user.uid: ", user.uid);
           } catch (e) {
             console.error("Error adding document: ", e);
           }
@@ -66,7 +79,8 @@ const RegisterScreen = () => {
       })
       .catch((err) => {
         alert(err?.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -78,7 +92,7 @@ const RegisterScreen = () => {
         style={[{ paddingTop: insets.top }, styles.gradient]}
       >
         <Text style={styles.title}>Registrate 🌱</Text>
-        <Text style={styles.label}>Nombres</Text>
+        <Text style={styles.label}>Nombre</Text>
         <TextInput
           style={styles.input}
           placeholder="Ingrese su nombre(s)"
@@ -116,6 +130,7 @@ const RegisterScreen = () => {
                   setShowDatePicker(true);
                   if (selectedDate) {
                     setBirthDate(selectedDate);
+                    setShowDatePicker(false);
                   }
                 }}
               />
@@ -132,6 +147,19 @@ const RegisterScreen = () => {
                 onPress={() => setShowDatePicker(true)}
               >
                 <Text>{birthDate.toDateString()}</Text>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={birthDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setBirthDate(selectedDate);
+                        setShowDatePicker(false);
+                      }
+                    }}
+                  />
+                )}
               </Pressable>
             )}
           </View>
@@ -150,9 +178,17 @@ const RegisterScreen = () => {
           </View>
         </View>
 
-        <Pressable style={styles.button} onPress={handleRegister}>
-          <Text style={styles.textButton}>Crear Cuenta</Text>
-        </Pressable>
+        <Button
+          title="Crear Cuenta"
+          onPress={handleRegister}
+          disabled={false}
+          loading={isLoading}
+          variant="filled"
+          size="medium"
+          rounded={false}
+          fullWidth
+        />
+
         <Link href={"/login"} style={styles.text}>
           ¿Ya tienes cuenta? Inicia sesión
         </Link>

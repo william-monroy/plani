@@ -1,5 +1,5 @@
 import { Tabs, router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { Text } from "react-native";
 import { Octicons } from "@expo/vector-icons";
@@ -7,12 +7,22 @@ import { Octicons } from "@expo/vector-icons";
 const TabsLayout = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  getAuth().onAuthStateChanged((user) => {
-    setIsLoading(false);
-    if (!user) {
-      router.replace("/landing");
-    }
-  });
+  // const update = useUserStore((state) => state.update);
+
+  const checkUser = async () => {
+    console.log("🔴authState");
+    getAuth().onAuthStateChanged(async (user) => {
+      console.log("user:", user);
+      setIsLoading(false);
+      if (!user) {
+        router.replace("/landing");
+      }
+    });
+  };
+
+  useEffect(() => {
+    checkUser();
+  }, []);
 
   if (isLoading) return <Text>Loading...</Text>;
 
@@ -23,29 +33,46 @@ const TabsLayout = () => {
         options={{
           headerShown: false,
           title: "Buscar",
-          tabBarIcon: ({ color }) => (
-            <Octicons name="search" size={24} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
           ),
         }}
       />
       <Tabs.Screen
-        name="users"
+        name="plan/[uid]"
         options={{
-          headerTitle: "Mis Planes",
-          title: "Planes",
+            headerShown: false,
+            tabBarStyle:{
+                display:"none",
+            },
+            href:null
+        }}
+      />
+      <Tabs.Screen
+        name="newPlan"
+        options={{
+          title: "Subir",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="diff-added" size={24} color={focused ? "orange" : "gray"}  />
+          ),
         }}
       />
       <Tabs.Screen
         name="user/[id]"
         options={{
+          headerShown: false,
           href: null,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="profile"
         options={{
-          headerTitle: "Settings",
-          title: "Settings",
+          headerTitle: "Perfil",
+          title: "Perfil",
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="person" size={24} color={focused ? "orange" : "gray"}  />
+          ),
         }}
       />
     </Tabs>
