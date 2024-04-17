@@ -29,6 +29,7 @@ import AddRating from "@/components/Rating";
 import { User } from "@/types/User.type";
 import { Valoracion } from "@/types/Valoracion.type";
 import { useUserStore } from "@/store/user-store";
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from "uuid";
 
 export default function CommentScreen() {
@@ -41,47 +42,78 @@ export default function CommentScreen() {
   const [planAdded, setPlanAdded] = useState<boolean>(false);
   const [description, setDescription] = useState<string>("");
   const [ratingValue, setRatingValue] = useState(0);
+  const [commentAdded, setCommentAdded] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { uid } = useLocalSearchParams();
 
-  const [refreshData, setRefreshData] = useState(0); // Añade este estado
+  const [refreshData, setRefreshData] = useState(0);
 
   const handleRatingChange = (newValue: number) => {
     setRatingValue(newValue); // Actualizamos el estado en la clase padre
   };
 
+  const updatePlanScore = async () => {
+    const planId = planData.uid;
+
+    try {
+      const qVal = query(collection(db, "Valoraciones"), where("idPlan", "==", planId));
+      const querySnapshotVal = await getDocs(qVal);
+      const valoraciones = querySnapshotVal.docs.map((doc) => doc.data() as Valoracion);
+
+      let score = 0;
+      for (const valoracion of valoraciones)
+        score += valoracion.score as number;
+      score /= valoraciones.length;
+
+      const planDocRef = doc(db, "Planes", planId);
+      await setDoc(planDocRef, { score: score }, { merge: true });
+      setRefreshData(refreshData + 1); // Incrementa el estado para forzar la recarga de datos
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+    }
+  }
+
   const addComment = async () => {
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
-    const uid4 = uuidv4();
 
-    if (ratingValue != 0){
-        const userDocRef = doc(db, "Valoraciones", uid4); // Crea una referencia al documento usando el uid del usuario
-        try {
-            await setDoc(userDocRef, {
-            idPlan: planId,
-            idUsuario: userId,
-            score: ratingValue,
-            description: description,
-            uid: uid4,
-            });
-            console.log("user.user.uid: ", uid4);
-            setDescription("");
-            setRefreshData(refreshData + 1); // Incrementa el estado para forzar la recarga de datos
-        } catch (e) {
-            console.error("Error adding document: ", e);
+    try {
+        const uid4 = uuidv4();
+
+        if (ratingValue != 0){
+            const userDocRef = doc(db, "Valoraciones", uid4); // Crea una referencia al documento usando el uid del usuario
+            try {
+                await setDoc(userDocRef, {
+                idPlan: planId,
+                idUsuario: userId,
+                score: ratingValue,
+                description: description,
+                uid: uid4,
+                });
+                console.log("user.user.uid: ", uid4);
+                setDescription("");
+                setRatingValue(0);
+                setCommentAdded(true);
+                updatePlanScore();
+                setRefreshData(refreshData + 1); // Incrementa el estado para forzar la recarga de datos
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        } else{
+            alert("Debes valorar el plan para poder comentar");
         }
-    } else{
-        alert("Debes valorar el plan para poder comentar");
+    } catch (error) {
+        console.error("Error getting uid: ", error);
     }
   };
 
   const getPlanData = async () => {
     const userId = useUserStore.getState().uid;
     try {
-      let q = query(collection(db, "Planes"), where("uid", "==", uid));
-      let querySnapshot = await getDocs(q);
-      let plans = querySnapshot.docs.map((doc) => doc.data() as Plan);
+      const q = query(collection(db, "Planes"), where("uid", "==", uid));
+      const querySnapshot = await getDocs(q);
+      const plans = querySnapshot.docs.map((doc) => doc.data() as Plan);
       if (plans.length > 0) {
         const planData = plans[0];
         console.log(planData);
@@ -96,25 +128,30 @@ export default function CommentScreen() {
         if (docSnap.exists()) {
           console.log("Admin data:", docSnap.data());
           adminData = docSnap.data() as User;
+          if (adminData.uid === userId) setPlanAdded(true);
         }
         setAdmin(adminData);
         console.log(admin);
       }
 
-      q = query(collection(db, "Valoraciones"), where("idPlan", "==", uid));
-      querySnapshot = await getDocs(q);
-      const valoraciones = querySnapshot.docs.map((doc) => doc.data() as Valoracion);
+      const qVal = query(collection(db, "Valoraciones"), where("idPlan", "==", uid));
+      const querySnapshotVal = await getDocs(qVal);
+      const valoraciones = querySnapshotVal.docs.map((doc) => doc.data() as Valoracion);
+
       const userData: User[] = [];
-      for (const userId of valoraciones.map((valoracion) => valoracion.idUsuario)) {
-        const docRef = doc(db, "Usuarios", userId as string);
+      for (const idUsuario of valoraciones.map((valoracion) => valoracion.idUsuario)) {
+        const docRef = doc(db, "Usuarios", idUsuario as string);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists())
+        if (docSnap.exists()){
           userData.push(docSnap.data() as User);
+          if (idUsuario === userId) setCommentAdded(true);
+        }
       }
       setUsers(userData);
       console.log("Users:", userData);
       setComments(valoraciones);
       console.log("Valoraciones:", valoraciones);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
@@ -122,128 +159,141 @@ export default function CommentScreen() {
 
   useEffect(() => {
     setPlanData({} as Plan); // Reinicia los datos del plan si es necesario
+    setCommentAdded(false); // Reinicia el indicador de comentario añadido
+    setPlanAdded(false); // Reinicia el indicador de plan añadido
+    setIsLoading(true); // Muestra el indicador de carga
     getPlanData(); // Obtiene los datos del plan nuevamente, incluyendo los nuevos asistentes
   }, [uid, refreshData]); // Dependencia adicional a refreshData
 
   return (
-    <View style={[{ paddingTop: insets.top }, styles.container]}>
-      <Image source={{ uri: planData?.picture }} style={styles.planImage} />
-      <View style={styles.navContainer}>
-        <TouchableOpacity onPress={() => router.push(`/plan/${uid}`)}>
-          <BlurView intensity={100} style={styles.blurContainer}>
-            <Ionicons name="arrow-back" size={24} color="#fffdfd" />
-          </BlurView>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push(`/user/${admin?.uid}`)}>
-          {admin ? (
-            <Image
-              source={{ uri: admin?.avatar as string }}
-              style={{
-                width: 50,
-                height: 50,
-                borderRadius: 25,
-                marginRight: 10,
-              }}
-            />
-          ) : (
-            <Image
-              source={require("../../../assets/avatar.jpg")}
-              style={{
-                width: 50,
-                height: 50,
-                borderRadius: 25,
-                marginRight: 10,
-              }}
-            />
-          )}
-        </TouchableOpacity>
-      </View>
-      <ScrollView style={{ flex: 1 }}>
-        <View style={styles.spacer} />
-        <View style={styles.contentCard}>
-          <Text style={styles.titleCard}>{planData.name}</Text>
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={styles.scoreNumber}>{planData.score as number}</Text>
-            <Rating size={20} value={planData.score as number} />
-          </View>
-          <View style={styles.cardDivider} />
-
-          <View>
-            {planAdded ? (
-                <View>
-                    <Text style={styles.subTitleCard}>Valora el plan!😊</Text>
-                    <View style={styles.addCommentContainer}>
-                    <View style={{ flexDirection: 'row', marginLeft: 5, marginTop: 5, padding: 5 }}>
-                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Valoración:  </Text>
-                        <AddRating size={20} onChangeValue={handleRatingChange}/>
-                    </View>
-                    <View style={{ marginLeft: 5, padding: 5 }}>
-                        <TextInput
-                            id="descripcion"
-                            style={styles.commentDescription}
-                            placeholder="Escribe tú comentario..."
-                            onChangeText={setDescription}
-                            value={description}
-                            multiline={true}
-                            scrollEnabled={true}
-                            numberOfLines={3}
-                            />
-                        </View>
-                    <View style={{ alignItems: 'center' }}>
-                        <Pressable
-                            style={styles.button}
-                            onPress={addComment}
-                        >
-                            <Text style={styles.textButton}>Añadir comentario</Text>
-                        </Pressable>
-                    </View>
-                    </View>
+    <View style={[{ paddingTop: insets.top }]}>
+      {isLoading ? (
+            <Text>Cargando comentarios...</Text>
+        ) : (
+            <View style={styles.container}>
+            <Image source={{ uri: planData?.picture }} style={styles.planImage} />
+            <View style={styles.navContainer}>
+                <TouchableOpacity onPress={() => router.push(`/plan/${uid}`)}>
+                <BlurView intensity={100} style={styles.blurContainer}>
+                    <Ionicons name="arrow-back" size={24} color="#fffdfd" />
+                </BlurView>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push(`/user/${admin?.uid}`)}>
+                {admin ? (
+                    <Image
+                    source={{ uri: admin?.avatar as string }}
+                    style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 25,
+                        marginRight: 10,
+                    }}
+                    />
+                ) : (
+                    <Image
+                    source={require("../../../assets/avatar.jpg")}
+                    style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 25,
+                        marginRight: 10,
+                    }}
+                    />
+                )}
+                </TouchableOpacity>
+            </View>
+            <ScrollView style={{ flex: 1 }}>
+                <View style={styles.spacer} />
+                <View style={styles.contentCard}>
+                <Text style={styles.titleCard}>{planData.name}</Text>
+                <View style={{ flexDirection: 'row' }}>
+                    <Text style={styles.scoreNumber}>{planData.score as number}</Text>
+                    <Rating size={20} value={planData.score as number} />
                 </View>
-            ) : (
-                <Text style={styles.notCommentText}>Solo pueden añadir comentarios los asistentes del plan</Text>
-            )}
-          </View>
-          <View style={styles.cardDivider} />
-          <Text style={styles.subTitleCard}>{comments.length} Comentarios</Text>
-          {comments.length != 0 ? (
-            <ScrollView>
-                {comments.map((comment, index) => {
-                    return (
-                        <View
-                            key={index}
-                            style={styles.commentContainer}
-                        >
-                            <TouchableOpacity
-                            key={`comment-touch-${index}`}
-                            onPress={() => router.push(`/user/${comment?.idUsuario}`)}
-                            >
-                                <Image
-                                    key={`comment-${index}`}
-                                    source={{
-                                        uri: users[index].avatar as string,
-                                    }}
-                                        style={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: 30,
-                                        marginRight: 10,
-                                    }}
-                                />
-                            </TouchableOpacity>
-                            <View style={styles.commentInfo}>
-                                <Text style={styles.commentNameText}>{users[index].firstName} {users[index].lastName}</Text>
-                                <Rating size={15} value={comment?.score as number} />
-                                <Text style={styles.commentDescription}>{comment?.description}</Text>
+                <View style={styles.cardDivider} />
+
+                <View>
+                    {planAdded ? (
+                        !commentAdded ? (
+                            <View>
+                                <Text style={styles.subTitleCard}>Valora el plan!😊</Text>
+                                <View style={styles.addCommentContainer}>
+                                <View style={{ flexDirection: 'row', marginLeft: 5, marginTop: 5, padding: 5 }}>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Valoración:  </Text>
+                                    <AddRating size={20} onChangeValue={handleRatingChange}/>
+                                </View>
+                                <View style={{ marginLeft: 5, padding: 5 }}>
+                                    <TextInput
+                                        id="descripcion"
+                                        style={styles.commentDescription}
+                                        placeholder="Escribe tú comentario..."
+                                        onChangeText={setDescription}
+                                        value={description}
+                                        multiline={true}
+                                        scrollEnabled={true}
+                                        numberOfLines={3}
+                                        />
+                                    </View>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Pressable
+                                        style={styles.button}
+                                        onPress={addComment}
+                                    >
+                                        <Text style={styles.textButton}>Añadir comentario</Text>
+                                    </Pressable>
+                                </View>
+                                </View>
                             </View>
-                        </View>
-                    );
-                })}
-          </ScrollView>
-          ) : (
-            <Text style={styles.notCommentText}>No hay comentarios disponibles</Text>
-          )}
+                        ) : (
+                            <Text style={styles.notCommentText}>Gracias por tu valoración!🫶</Text>
+                        )
+                    ) : (
+                        <Text style={styles.notCommentText}>Solo pueden añadir comentarios los asistentes del plan</Text>
+                    )}
+                </View>
+                <View style={styles.cardDivider} />
+                <Text style={styles.subTitleCard}>{comments.length} Comentarios</Text>
+                {comments.length > 0 && users.length == comments.length ? (
+                    <ScrollView>
+                        {comments.map((comment, index) => {
+                            return (
+                                <View
+                                    key={index}
+                                    style={styles.commentContainer}
+                                >
+                                    <TouchableOpacity
+                                    key={`comment-touch-${index}`}
+                                    onPress={() => router.push(`/user/${comment?.idUsuario}`)}
+                                    >
+                                        <Image
+                                            key={`comment-${index}`}
+                                            source={{
+                                                uri: users[index].avatar as string,
+                                            }}
+                                                style={{
+                                                width: 60,
+                                                height: 60,
+                                                borderRadius: 30,
+                                                marginRight: 10,
+                                            }}
+                                        />
+                                    </TouchableOpacity>
+                                    <View style={styles.commentInfo}>
+                                        <Text style={styles.commentNameText}>{users[index].firstName} {users[index].lastName}</Text>
+                                        <Rating size={15} value={comment?.score as number} />
+                                        <Text style={styles.commentDescription}>{comment?.description}</Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                </ScrollView>
+                ) : (
+                    <Text style={styles.notCommentText}>No hay comentarios disponibles</Text>
+                )}
+                </View>
+            </ScrollView>
         </View>
-      </ScrollView>
+        )}
     </View>
   );
 }

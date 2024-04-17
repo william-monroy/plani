@@ -38,7 +38,7 @@ const UserPage = () => {
     <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Cargando planes...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
             {planes
@@ -56,7 +56,7 @@ const UserPage = () => {
     <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Cargando planes...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
           {planes
