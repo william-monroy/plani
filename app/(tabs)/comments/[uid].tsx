@@ -27,85 +27,41 @@ import { Plan } from "@/types/Plan.type";
 import { useEffect, useState } from "react";
 import Rating from "@/components/UserRating";
 import { User } from "@/types/User.type";
-import { useUserStore } from "@/store/user-store";
-import { activities } from "@/utils/constants";
+import { Valoracion } from "@/types/Valoracion.type";
 
 export default function PlanScreen() {
   const insets = useSafeAreaInsets();
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
-  const [liked, setLiked] = useState<boolean>(false);
-  const [guests, setGuests] = useState<User[]>([] as User[]);
+  const [comments, setComments] = useState<Valoracion[]>([] as Valoracion[]);
   const [admin, setAdmin] = useState<User>({} as User);
-  const [planAdded, setPlanAdded] = useState<boolean>(false);
+  const [avatar, setAvatar] = useState<string>("");
 
   const { uid } = useLocalSearchParams();
 
   const [refreshData, setRefreshData] = useState(0); // Añade este estado
 
-  const nuevoAsistente = async () => {
-    const userId = useUserStore.getState().uid;
-    const planId = planData.uid;
-    //console.log(userId + " " + planId);
-
-    const planRef = doc(db, "Planes", planId);
-
-    try {
-      // Actualiza el campo 'guests' añadiendo el 'userId' a la lista
-      await updateDoc(planRef, {
-        guests: arrayUnion(userId),
-      });
-      console.log("Asistente añadido con éxito");
-      setRefreshData((prev) => prev + 1); // Incrementa el contador para refrescar datos
-    } catch (error) {
-      console.error("Error añadiendo asistente: ", error);
+  const getAvatar = async (uid: string) => {
+    console.log("Getting avatar for user:", uid);
+    const q = query(collection(db, "Usuarios"), where("uid", "==", uid));
+    const querySnapshot = await getDocs(q);
+    const users = querySnapshot.docs.map((doc) => doc.data() as User);
+    if (users.length > 0) {
+        const user = users[0];
+        console.log("User:", user);
+        setAvatar(user.avatar as string);
     }
-
-    // const q = query(collection(db, "Planes"), where("uid", "==", uid));
-    // const querySnapshot = await getDocs(q);
-    // const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
-  };
-
-  const borrarAsistente = async () => {
-    const userId = useUserStore.getState().uid;
-    const planId = planData.uid;
-
-    const planRef = doc(db, "Planes", planId);
-
-    try {
-      // Actualiza el campo 'guests' borrando el 'userId' a la lista
-      await updateDoc(planRef, {
-        guests: arrayRemove(userId),
-      });
-      console.log("Asistente borrado con éxito");
-      setPlanAdded(false);
-      setRefreshData((prev) => prev + 1); // Incrementa el contador para refrescar datos
-    } catch (error) {
-      console.error("Error borrando asistente: ", error);
-    }
-  };
+  }
 
   const getPlanData = async () => {
-    const userId = useUserStore.getState().uid;
     try {
-      const q = query(collection(db, "Planes"), where("uid", "==", uid));
-      const querySnapshot = await getDocs(q);
-      const plans = querySnapshot.docs.map((doc) => doc.data() as Plan);
+      let q = query(collection(db, "Planes"), where("uid", "==", uid));
+      let querySnapshot = await getDocs(q);
+      let plans = querySnapshot.docs.map((doc) => doc.data() as Plan);
       if (plans.length > 0) {
         const planData = plans[0];
         console.log(planData);
         setPlanData(planData);
-
-        const guestsData: User[] = [];
-        for (const guestId of planData.guests) {
-          if (guestId === userId) setPlanAdded(true);
-          const docRef = doc(db, "Usuarios", guestId);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            guestsData.push(docSnap.data() as User);
-          }
-        }
-        setGuests(guestsData);
 
         let adminData: User = {} as User;
         const docRef = doc(db, "Usuarios", planData.idAdmin);
@@ -117,6 +73,12 @@ export default function PlanScreen() {
         setAdmin(adminData);
         console.log(admin);
       }
+
+      q = query(collection(db, "Valoraciones"), where("idPlan", "==", uid));
+      querySnapshot = await getDocs(q);
+      const valoraciones = querySnapshot.docs.map((doc) => doc.data() as Valoracion);
+      setComments(valoraciones);
+      console.log("Valoraciones:", valoraciones);
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
@@ -131,7 +93,7 @@ export default function PlanScreen() {
     <View style={[{ paddingTop: insets.top }, styles.container]}>
       <Image source={{ uri: planData?.picture }} style={styles.planImage} />
       <View style={styles.navContainer}>
-        <TouchableOpacity onPress={() => router.replace("/")}>
+        <TouchableOpacity onPress={() => router.push(`/plan/${uid}`)}>
           <BlurView intensity={100} style={styles.blurContainer}>
             <Ionicons name="arrow-back" size={24} color="#fffdfd" />
           </BlurView>
@@ -164,83 +126,36 @@ export default function PlanScreen() {
         <View style={styles.spacer} />
         <View style={styles.contentCard}>
           <Text style={styles.titleCard}>{planData.name}</Text>
-          {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
-          (
-            <Rating size={24} value={planData.score as number}/>
-          ) : null}
-          <Text style={styles.subTitleCard}>Detalles</Text>
-          <Text style={styles.cardDate}>
-            {new Date(
-              (planData.dateStart?.seconds as number) * 1000
-            ).toLocaleDateString()}
-            {" - "}
-            {new Date(
-              (planData.dateEnd?.seconds as number) * 1000
-            ).toLocaleDateString()}
-          </Text>
-          <Text style={styles.cardDescription}>{planData.description}</Text>
-          {planData.labels && (
-            <View style={styles.labelsContainer}>
-              {planData.labels.map((label: string, index: number) => (
-                <View key={index} style={styles.labelContainer}>
-                  <Text style={styles.labelText}>
-                    {activities[label] || label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
           <View style={styles.cardDivider} />
-          <Text style={styles.subTitleCard}>{guests.length} Asistentes</Text>
+          <Text style={styles.subTitleCard}>{comments.length} Comentarios</Text>
 
-          <ScrollView horizontal>
-            {guests.map((guest, index) => {
+          <ScrollView>
+            {comments.map((user, index) => {
               return (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => router.push(`/user/${guest?.uid}`)}
-                >
-                  <Image
-                    key={`guest-avatar-${index}`}
-                    source={{
-                      uri: (guest?.avatar ||
-                        `https://ui-avatars.com/api/?name=${
-                          guest?.firstName.split(" ")[0]
-                        }+${
-                          guest?.lastName.split(" ")[0]
-                        }&background=random&color=fff`) as string,
-                    }}
-                    style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 25,
-                      marginRight: 10,
-                    }}
-                  />
-                </TouchableOpacity>
+                <View style={styles.labelsContainer}>
+                    <TouchableOpacity
+                    key={index}
+                    onPress={() => router.push(`/user/${user?.idUsuario}`)}
+                    >
+                        <Image
+                            key={`user-avatar-${index}`}
+                            source={{
+                                uri: avatar as string,
+                            }}
+                                style={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: 25,
+                                marginRight: 10,
+                            }}
+                        />
+                    </TouchableOpacity>
+                    <Text>{user?.description}</Text>
+                    <Rating size={20} value={user?.score as number} />
+                </View>
               );
             })}
           </ScrollView>
-          <View style={styles.container2}>
-          {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
-          (
-            <Pressable style={styles.button} onPress={() => router.push(`/comments/${uid}`)}>
-              <Text style={styles.textButton}>Comenta</Text>
-            </Pressable>
-          ) : (
-            planData.idAdmin != useUserStore.getState().uid ? (
-              planAdded === false ? (
-                <Pressable style={styles.button} onPress={nuevoAsistente}>
-                  <Text style={styles.textButton}>Apuntarme</Text>
-                </Pressable>
-              ) : (
-                <Pressable style={styles.button} onPress={borrarAsistente}>
-                  <Text style={styles.textButton}>Salir del plan</Text>
-                </Pressable>
-              )
-            ) : null
-          )}
-          </View>
         </View>
       </ScrollView>
     </View>

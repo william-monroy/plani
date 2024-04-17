@@ -49,6 +49,16 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="comments/[uid]"
+        options={{
+            headerShown: false,
+            tabBarStyle:{
+                display:"none",
+            },
+            href:null
+        }}
+      />
+      <Tabs.Screen
         name="newPlan"
         options={{
           title: "Subir",
