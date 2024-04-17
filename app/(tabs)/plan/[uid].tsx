@@ -34,7 +34,6 @@ export default function PlanScreen() {
   const insets = useSafeAreaInsets();
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
-  const [liked, setLiked] = useState<boolean>(false);
   const [guests, setGuests] = useState<User[]>([] as User[]);
   const [admin, setAdmin] = useState<User>({} as User);
   const [planAdded, setPlanAdded] = useState<boolean>(false);
@@ -60,10 +59,6 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
     }
-
-    // const q = query(collection(db, "Planes"), where("uid", "==", uid));
-    // const querySnapshot = await getDocs(q);
-    // const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
   };
 
   const borrarAsistente = async () => {
@@ -225,7 +220,7 @@ export default function PlanScreen() {
           {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
           (
             <Pressable style={styles.button} onPress={() => router.push(`/comments/${uid}`)}>
-              <Text style={styles.textButton}>Comenta</Text>
+              <Text style={styles.textButton}>Comentarios</Text>
             </Pressable>
           ) : (
             planData.idAdmin != useUserStore.getState().uid ? (
