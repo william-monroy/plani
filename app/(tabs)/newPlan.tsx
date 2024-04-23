@@ -9,6 +9,7 @@ import {
   TextInput,
   Platform,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -33,6 +34,7 @@ const UsersPage = () => {
   const [description, setDescription] = useState<string>("");
   const [showDatePickerStart, setShowDatePickerStart] = useState(false);
   const [showDatePickerEnd, setShowDatePickerEnd] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [cine, setCine] = useState(false);
   const [fiesta, setFiesta] = useState(false);
@@ -108,6 +110,7 @@ const UsersPage = () => {
 
   const addPlan = async () => {
     setIsLoading(true);
+    setRefreshing(true);
     const { uid } = useUserStore.getState();
     const userId = uid;
     try {
@@ -182,6 +185,7 @@ const UsersPage = () => {
                   })
                   .finally(() => {
                     setIsLoading(false);
+                    setRefreshing(false);
                   });
               }
             );
@@ -190,12 +194,14 @@ const UsersPage = () => {
       } catch (error) {
         console.error("Error uploading image: ", error);
         setIsLoading(false);
+        setRefreshing(false);
       }
 
       // console.log("Plan added from user: ", userId);
     } catch (error) {
       console.error("Error adding plan: ", error);
       setIsLoading(false);
+      setRefreshing(false);
     }
   };
 

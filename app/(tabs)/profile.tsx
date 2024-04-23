@@ -6,6 +6,7 @@ import {
   getDoc,
   updateDoc,
   onSnapshot,
+  addDoc,
 } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db, storage } from "../_infrastructure/firebase";
@@ -19,6 +20,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useUserStore } from "@/store/user-store";
 import { User } from "@/types/User.type";
@@ -33,10 +35,12 @@ export const ProfilePage = () => {
   const [user, setUser] = useState<User>({} as User);
   const [refreshData, setRefreshData] = useState(0); // Añade este estado
   const [image, setImage] = useState<string>(avatar as string); // Añade este estado
+  //const [image, setImage] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   //desde aqui
   const [routes] = useState([
@@ -56,7 +60,15 @@ export const ProfilePage = () => {
         {isLoading ? (
           <Text>Loading users...</Text>
         ) : (
-          <ScrollView style={styles.plans_index}>
+          <ScrollView 
+            style={styles.plans_index} 
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
+          >
             {planes
               .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
               .map((plan: Plan, key: number) => (
@@ -67,6 +79,7 @@ export const ProfilePage = () => {
       </View>
     </View>
   );
+  
 
   const JoinedPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
@@ -74,7 +87,15 @@ export const ProfilePage = () => {
         {isLoading ? (
           <Text>Loading users...</Text>
         ) : (
-          <ScrollView style={styles.plans_index}>
+          <ScrollView 
+            style={styles.plans_index}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
+          >
             {planes
               .filter((plan: Plan) => plan.guests.includes(user.uid as string))
               .map((plan: Plan, key: number) => (
@@ -86,7 +107,12 @@ export const ProfilePage = () => {
     </View>
   );
 
+  const onRefresh = () => {
+    getData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
+  };
+
   const getData = async () => {
+    setRefreshing(true);
     const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
@@ -98,6 +124,7 @@ export const ProfilePage = () => {
       );
       console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
+      setRefreshing(false);
     });
   };
 
@@ -110,6 +137,7 @@ export const ProfilePage = () => {
   const { uid } = useLocalSearchParams();
 
   const pickImage = async () => {
+    setRefreshing(true);
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -126,19 +154,23 @@ export const ProfilePage = () => {
       });
 
       if (!result.canceled) {
+        console.log("slkdfhksadjlkflkasdf");
         console.log(result.assets[0].uri);
-        setImage(result.assets[0].uri);
-        updateUser();
+        //setImage(result.assets[0].uri);
+        await updateUser(result.assets[0].uri);
       }
     } catch (error) {
       console.error("Error picking image: ", error);
     }
+    setRefreshing(false);
   };
 
-  const updateUser = async () => {
+  const updateUser = async (img: string) => {
     const userId = user.uid;
     try {
-      const uri = image as string;
+      const uri = img;
+      console.log("slkdfhksadjlkflkasdfsdfdsf")
+      console.log("URI: ", uri);
       const blob = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.onload = function () {
@@ -152,8 +184,10 @@ export const ProfilePage = () => {
         xhr.send(null);
       });
       const filename = uri.substring(uri.lastIndexOf("/") + 1);
-      const storageRef = ref(storage, `planes/${userId}/${filename}`);
+      //const storageRef = ref(storage, `planes/${userId}/${filename}`);
+      const storageRef = ref(storage, `users/${userId}/${filename}`);
       const uploadTask = uploadBytesResumable(storageRef, blob as Blob);
+      
 
       uploadTask.on(
         "state_changed",
@@ -174,13 +208,15 @@ export const ProfilePage = () => {
           console.error("Error uploading image: ", error);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            console.log("File available at", downloadURL);
-            setImageUrl(downloadURL);
-            const docRef = doc(db, "Usuarios", userId as string);
-            updateDoc(docRef, { avatar: imageUrl });
-          });
-        }
+          getDownloadURL(uploadTask.snapshot.ref).then(
+            async (downloadURL) => {
+              console.log("///////////////////////////////////////////")
+              console.log("File available at", downloadURL);
+              setImageUrl(downloadURL);
+              const docRef = doc(db, "Usuarios", userId as string);
+              updateDoc(docRef, { avatar: imageUrl });
+            });
+          }
       );
     } catch (error) {
       console.error("Error uploading image: ", error);
@@ -221,7 +257,7 @@ export const ProfilePage = () => {
         </TouchableOpacity>
         <View style={{ gap: 10, alignItems: "center" }}>
           <Text style={styles.userName}>
-            {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
+            {user.firstName} {user.lastName}
           </Text>
           <Rating size={20} value={user.score as number} />
         </View>
