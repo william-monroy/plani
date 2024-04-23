@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import Rating from "@/components/Rating";
 import { User } from "@/types/User.type";
 import { useUserStore } from "@/store/user-store";
+import { Solicitud } from "@/types/Solicitud";
 
 export default function PlanScreen() {
   const insets = useSafeAreaInsets();
@@ -89,8 +90,6 @@ export default function PlanScreen() {
   const getPlanData = async () => {
     const userId = useUserStore.getState().uid;
     try {
-      // console.log("--------->" + uid);
-      // console.log("--------->" + useUserStore.getState().uid);
       const q = query(collection(db, "Planes"), where("uid", "==", uid));
       const querySnapshot = await getDocs(q);
       const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
@@ -120,11 +119,44 @@ export default function PlanScreen() {
         }
         setAdmin(adminData);
         console.log(admin)
+        const idAdmins = querySnapshot.docs.map(doc => doc.data().idAdmin);
+        console.log(planData.idAdmin);
+        console.log(admin.uid);
+        if (admin.uid == planData.idAdmin){
+          console.log(admin.uid);
+        }
+
       }
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
   };
+
+ 
+  const getUsersData = async () => {
+    try {
+        const q = query(collection(db, "Usuarios"), where("uid", "in", setSolicitudes));
+        const querySnapshot = await getDocs(q);
+        const userData: Solicitud[] = querySnapshot.docs.map((doc) => ({
+            idUsuario: doc.id,
+            avatar: doc.data().avatar,
+            // Suponiendo que tienes los campos "firstName" y "lastName" en tus documentos de usuario
+            firstName: doc.data().firstName,
+            lastName: doc.data().lastName,
+            planId: planData.uid
+        }));
+        setSolicitudes(userData);
+        setIsLoading(false);
+    } catch (error) {
+        console.error("Error getting users data: ", error);
+    }
+};
+
+
+     // const q = query(collection(db, "Planes"), where("uid", "==", uid));
+    // const querySnapshot = await getDocs(q);
+    // const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
+
 
   useEffect(() => {
     setPlanData({} as Plan); // Reinicia los datos del plan si es necesario
@@ -140,29 +172,29 @@ export default function PlanScreen() {
             <Ionicons name="arrow-back" size={24} color="#fffdfd" />
           </BlurView>
         </TouchableOpacity>
-        {/* <TouchableOpacity onPress={() => router.push(`/perfil/${admin?.uid}`)}> */}
-        {admin ? (
-          <Image
-            source={{ uri: (admin?.avatar) as string }}
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              marginRight: 10,
-
-            }}/>
-          ) : (
+        <TouchableOpacity onPress={() => router.push(`/user/${admin?.uid}`)}>
+          {admin ? (
             <Image
-            source={require("../../../assets/avatar.jpg")}
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              marginRight: 10,
-            }}
-          />
-          )}
-        {/* </TouchableOpacity> */}
+              source={{ uri: (admin?.avatar) as string }}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                marginRight: 10,
+
+              }}/>
+            ) : (
+              <Image
+              source={require("../../../assets/avatar.jpg")}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                marginRight: 10,
+              }}
+            />
+            )}
+        </TouchableOpacity>
         {/* <TouchableOpacity onPress={() => setLiked(!liked)}>
           <BlurView intensity={60} style={styles.blurContainer} tint="dark">
             <Ionicons
@@ -200,40 +232,56 @@ export default function PlanScreen() {
         <ScrollView horizontal>
           {guests.map((guest, index) => {
             return (
-              <Image
-                key={index}
-                source={{
-                  uri: (guest?.avatar ||
-                    `https://ui-avatars.com/api/?name=${
-                      guest?.firstName.split(" ")[0]
-                    }+${
-                      guest?.lastName.split(" ")[0]
-                    }&background=random&color=fff`) as string,
-                }}
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 25,
-                  marginRight: 10,
-                }}
-              />
+              <TouchableOpacity key={index} onPress={() => router.push(`/user/${guest?.uid}`)}>
+                <Image
+                  key={`guest-avatar-${index}`}
+                  source={{
+                    uri: (guest?.avatar ||
+                      `https://ui-avatars.com/api/?name=${
+                        guest?.firstName.split(" ")[0]
+                      }+${
+                        guest?.lastName.split(" ")[0]
+                      }&background=random&color=fff`) as string,
+                  }}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 25,
+                    marginRight: 10,
+                  }}
+                />
+              </TouchableOpacity>
             );
           })}
+
+
         </ScrollView>
         <View style={styles.container2}>
-          {planAdded == false ? (
-            <Pressable style={styles.button} onPress={nuevoAsistente}>
-              <Text style={styles.textButton}>Apuntarme</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={styles.button} onPress={borrarAsistente}>
-              <Text style={styles.textButton}>Salir del plan</Text>
-            </Pressable>
-          )}
+          {planData.idAdmin != useUserStore.getState().uid ? (
+            planAdded === false ? (
+              <Pressable style={styles.button} onPress={nuevoAsistente}>
+                <Text style={styles.textButton}>Apuntarme</Text>
+              </Pressable>
+            ) : (
+              <Pressable style={styles.button} onPress={borrarAsistente}>
+                <Text style={styles.textButton}>Salir del plan</Text>
+              </Pressable>
+            )
+          ) : 
+          admin.uid == planData.idAdmin ? (
+              <Pressable style={styles.button} onPress={() => router.replace("/plan/solicitud")}>
+              <Text style={styles.textButton}>Solicitudes</Text>
+              </Pressable>
+            ) : null}
         </View>
+
+        <View style={styles.container}>
+
+        </View>
+        
       </View>
       </ScrollView>
-    </View>
+   </View>
   );
 }
 
@@ -352,3 +400,11 @@ const styles = StyleSheet.create({
     color: "#FFFFFF", // Aseguramos que el texto sea blanco para mejor contraste
   },
 });
+function setSolicitudes(userData: Solicitud[]) {
+  throw new Error("Function not implemented.");
+}
+
+function setIsLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+

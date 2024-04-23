@@ -20,4 +20,5 @@ export interface Plan {
   requests: string[];
   score: Number;
   uid: string;
+  solicitud: string[];
 }

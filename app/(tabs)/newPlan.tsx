@@ -170,6 +170,7 @@ const UsersPage = () => {
                   picture: downloadURL,
                   request: [],
                   score: 0,
+                  solicitud: []
                 })
                   .then((docRef) => {
                     updateDoc(docRef, { uid: docRef.id });
