@@ -1,8 +1,8 @@
 export interface Solicitud {
-    lastName: any;
-    firstName: any;
+    lastName: String;
+    firstName: String;
     idUsuario: String;
     avatar: String;
-    planId: String;
+    planId: any;
     onRefreshData?: any;
   }

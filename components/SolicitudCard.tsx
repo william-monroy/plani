@@ -1,4 +1,3 @@
-import solicitud from "@/app/(tabs)/plan/solicitud";
 import { db } from "@/app/_infrastructure/firebase";
 import { Solicitud } from "@/types/Solicitud";
 import { User } from "@/types/User.type";
@@ -42,7 +41,7 @@ export const SolicitudCard = (props: Solicitud) => {
     
                 // Actualizar el documento con el nuevo objeto de datos
                 await updateDoc(docRef, newData);
-    
+                
                 console.log('Usuario movido de la lista de solicitudes a la lista de invitados en Firestore');
             } else {
                 console.log('El documento no existe en Firestore');

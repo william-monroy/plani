@@ -269,7 +269,7 @@ export default function PlanScreen() {
             )
           ) : 
           admin.uid == planData.idAdmin ? (
-              <Pressable style={styles.button} onPress={() => router.replace("/plan/solicitud")}>
+              <Pressable style={styles.button} onPress={() => router.push(`/solicitudes/${planData.uid}`)}>
               <Text style={styles.textButton}>Solicitudes</Text>
               </Pressable>
             ) : null}
