@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { collection, onSnapshot } from "firebase/firestore";
@@ -9,13 +9,16 @@ import { Plan } from "@/types/Plan.type";
 import { useUserStore } from "@/store/user-store";
 import { PlanCard } from "@/components/PlanCard";
 
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+
 const HomePage = () => {
   const insets = useSafeAreaInsets();
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const { firstName, gender } = useUserStore((state) => state);
-
+  const uid = useUserStore.getState().uid;
   const getData = async () => {
     const collectionRef = collection(db, "Planes");
 
@@ -43,6 +46,9 @@ const HomePage = () => {
           Bienvenid{gender === "male" ? "o" : gender === "female" ? "a" : "x"}{" "}
           {firstName.split(" ")[0]} 👋
         </Text>
+        <TouchableOpacity onPress={() => router.push(`/notificaciones/${uid}`)}>
+          <Ionicons name="notifications-outline" size={24} color="black" />
+        </TouchableOpacity>
       </View>
       <View style={styles.container2}>
         <Text style={[{ marginBottom: 15 }, styles.subTitle]}>

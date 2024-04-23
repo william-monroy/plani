@@ -59,6 +59,16 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="notificaciones/[uid]"
+        options={{
+            headerShown: false,
+            tabBarStyle:{
+                display:"none",
+            },
+            href:null
+        }}
+      />
+      <Tabs.Screen
         name="newPlan"
         options={{
           title: "Subir",

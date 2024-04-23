@@ -14,6 +14,7 @@ import { BlurView } from "expo-blur";
 import {
   collection,
   doc,
+  addDoc,
   getDoc,
   getDocs,
   query,
@@ -44,8 +45,12 @@ export default function PlanScreen() {
 
   const nuevoAsistente = async () => {
     const userId = useUserStore.getState().uid;
+    const userName = useUserStore.getState().firstName + " " + useUserStore.getState().lastName;
     const planId = planData.uid;
+    const planAdmin = planData.idAdmin;
     //console.log(userId + " " + planId);
+
+    // 
 
     const planRef = doc(db, "Planes", planId);
 
@@ -59,11 +64,25 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
     }
+
+    const notificatioNRef = collection(db, "Notificaciones");
+    const nuevaNotificacion = {
+      idUsuario: planAdmin,
+      titulo: "Nuevo asistente",
+      mensaje: "El usuario " + userName + " se ha unido al plan \"" + planData.name + "\"",
+      fecha: new Date(),
+      leida: false,
+    }
+
+    await addDoc(notificatioNRef, nuevaNotificacion);
+
   };
 
   const borrarAsistente = async () => {
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
+    const userName = useUserStore.getState().firstName + " " + useUserStore.getState().lastName;
+    const planAdmin = planData.idAdmin;
 
     const planRef = doc(db, "Planes", planId);
 
@@ -78,6 +97,17 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error borrando asistente: ", error);
     }
+
+    const notificatioNRef = collection(db, "Notificaciones");
+    const nuevaNotificacion = {
+      idUsuario: planAdmin,
+      titulo: "Nuevo asistente",
+      mensaje: "El usuario " + userName + " se ha salido del plan \"" + planData.name + "\"",
+      fecha: new Date(),
+      leida: false,
+    }
+
+    await addDoc(notificatioNRef, nuevaNotificacion);
   };
 
   const getPlanData = async () => {
