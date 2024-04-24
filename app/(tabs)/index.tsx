@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, RefreshControl  } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { collection, onSnapshot } from "firebase/firestore";
@@ -13,10 +13,12 @@ const HomePage = () => {
   const insets = useSafeAreaInsets();
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const { firstName, gender } = useUserStore((state) => state);
 
   const getData = async () => {
+    setRefreshing(true);
     const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
@@ -28,7 +30,12 @@ const HomePage = () => {
       );
       console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
+      setRefreshing(false);
     });
+  };
+
+  const onRefresh = () => {
+    getData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
   };
 
   useEffect(() => {
@@ -51,7 +58,15 @@ const HomePage = () => {
         {isLoading ? (
           <Text>Loading users...</Text>
         ) : (
-          <ScrollView style={styles.plans}>
+          <ScrollView
+            style={styles.plans}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
+          >
             {planes.map((plan: Plan, key: number) => (
               <PlanCard key={key} {...plan} />
             ))}

@@ -32,7 +32,9 @@ const TabsLayout = () => {
         name="index"
         options={{
           headerShown: false,
+          
           title: "Buscar",
+          
           tabBarIcon: ({ focused }) => (
             <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
           ),

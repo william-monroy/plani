@@ -7,7 +7,7 @@ import {
   where,
   onSnapshot } from "firebase/firestore";
 import { db } from "../../_infrastructure/firebase";
-import { View, Text, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, ScrollView, RefreshControl  } from "react-native";
 import { User } from "@/types/User.type";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { Plan } from "@/types/Plan.type";
@@ -19,12 +19,12 @@ const UserPage = () => {
   const { id } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User>({} as User);
-  const [refreshData, setRefreshData] = useState(0); // Añade este estado
+  const [refreshData, setRefreshData] = useState(false); // Añade este estado
   const [image, setImage] = useState<string>(""); // Añade este estado
   const [index, setIndex] = useState(0);
-  const [imageUrl, setImageUrl] = useState<string>("");
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
 
 
   const [routes] = useState([
@@ -34,21 +34,33 @@ const UserPage = () => {
 
   const initialLayout = { width: Dimensions.get('window').width };
 
+  const handleRefresh = () => {
+    setRefreshData(true); // Cambia el estado para forzar recarga
+    getData().then(() => {
+      setRefreshData(false); // Restablece el estado de refresco
+    });
+  };
+
+
   const MyPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
-      <View style={styles.container2_index}>
+      <ScrollView
+        style={styles.plans_index}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshData}
+            onRefresh={handleRefresh}
+          />
+        }
+      >
         {isLoading ? (
           <Text>Cargando planes...</Text>
         ) : (
-          <ScrollView style={styles.plans_index}>
-            {planes
-              .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-              .map((plan: Plan, key: number) => (
-              <PlanCard key={key} {...plan} />
-            ))}
-          </ScrollView>
+          planes.filter((plan) => plan.idAdmin === user.uid).map((plan, key) => (
+            <PlanCard key={key} {...plan} />
+          ))
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 
@@ -100,6 +112,7 @@ const UserPage = () => {
         setUser(userData);
         setImage(userData.avatar as string);
       }
+      setIsLoadingUserData(false);
     } catch (error) {
       console.error("Error getting documents: ", error);
     };
@@ -112,18 +125,23 @@ const UserPage = () => {
 
   return (
     <View style={[{ paddingTop: insets.top }, styles.container]}>
-      {/* Foto y nombre del usuario */}
-      <View style={styles.userInfo}>
-        <Image source={{ uri: image as string }} style={styles.userPhoto} />
-        <View style={{'gap': 10, 'alignItems': 'center'}}>
-          <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
-          <Rating size={20} value={user.score as number} />
+      {isLoadingUserData ? (
+        <Text>Cargando datos del usuario...</Text>
+      ) : (
+        <View style={styles.userInfo}>
+          <Image source={{ uri: image as string }} style={styles.userPhoto} />
+          <View style={{'gap': 10, 'alignItems': 'center'}}>
+            <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
+            <Rating size={20} value={user.score as number} />
+          </View>
         </View>
-      </View>
-
+      )}
       <TabView
         navigationState={{ index, routes }}
-        renderScene={renderScene}
+        renderScene={SceneMap({
+          myPlans: MyPlansRoute,
+          joinedPlans: JoinedPlansRoute
+        })}
         onIndexChange={setIndex}
         initialLayout={initialLayout}
         renderTabBar={props => (

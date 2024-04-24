@@ -7,6 +7,7 @@ import {
   Pressable,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -37,12 +38,14 @@ export default function PlanScreen() {
   const [guests, setGuests] = useState<User[]>([] as User[]);
   const [admin, setAdmin] = useState<User>({} as User);
   const [planAdded, setPlanAdded] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const { uid } = useLocalSearchParams();
 
   const [refreshData, setRefreshData] = useState(0); // Añade este estado
 
   const nuevoAsistente = async () => {
+    setRefreshing(true);
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
     //console.log(userId + " " + planId);
@@ -59,9 +62,15 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
     }
+    setRefreshing(false);
+
+    // const q = query(collection(db, "Planes"), where("uid", "==", uid));
+    // const querySnapshot = await getDocs(q);
+    // const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
   };
 
   const borrarAsistente = async () => {
+    setRefreshing(true);
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
 
@@ -78,9 +87,11 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error borrando asistente: ", error);
     }
+    setRefreshing(false);
   };
 
   const getPlanData = async () => {
+    setRefreshing(true);
     const userId = useUserStore.getState().uid;
     try {
       const q = query(collection(db, "Planes"), where("uid", "==", uid));
@@ -115,6 +126,11 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
+    setRefreshing(false);
+  };
+
+  const onRefresh = () => {
+    getPlanData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
   };
 
   useEffect(() => {
@@ -155,7 +171,12 @@ export default function PlanScreen() {
           )}
         </TouchableOpacity>
       </View>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }>
         <View style={styles.spacer} />
         <View style={styles.contentCard}>
           <Text style={styles.titleCard}>{planData.name}</Text>
