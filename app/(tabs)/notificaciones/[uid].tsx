@@ -40,32 +40,55 @@ export default function CommentScreen() {
   const { uid } = useLocalSearchParams();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([] as Notificacion[]);
   const [refreshing, setRefreshing] = useState(false);
+  const [key, setKey] = useState(0); // Estado inicial para la clave
   const insets = useSafeAreaInsets();
   const userId = useUserStore.getState().uid;
   const avatar = useUserStore.getState().avatar;
   
   const getData = async () => {
     try {
+      console.log("Estoy aqui!!!!!!!!-------seffdvgdfg----")
       const q = query(collection(db, "Notificaciones"), where("idUsuario", "==", userId));
       const querySnapshot = await getDocs(q);
       const notificaciones = querySnapshot.docs.map((doc) => doc.data() as Notificacion);
       setNotificaciones(notificaciones);
-      console.log("Valoraciones:", notificaciones);
+      console.log("Notificcaciones:", notificaciones);
       console.log("Id del suario:", userId);
       //setIsLoading(false);
+
+      querySnapshot.docs.forEach(docSnapshot => {
+        const notificacion = docSnapshot.data() as Notificacion;
+        if (!notificacion.leida) {
+          const notificacionRef = doc(db, "Notificaciones", docSnapshot.id);
+          setDoc(notificacionRef, { leida: true }, { merge: true })
+            .then(() => console.log(`Notificación ${docSnapshot.id} marcada como leída`))
+            .catch(error => console.error(`Error al actualizar la notificación ${docSnapshot.id}: `, error));
+        }
+      });
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
   };
 
-  useEffect(() => {
+  const handleBackButtonClick = () => {
+    setKey(prev => prev + 1); // Incrementa la clave para forzar el remontaje
+    router.replace("/"); // O cualquier navegación que realices
+  };
+
+  const onRefresh = () => {
     setRefreshing(true);
-    getData(); // Obtiene los datos del plan nuevamente, incluyendo los nuevos asistentes
+    getData(); 
     setRefreshing(false);
-  }, [uid]);
+  };
+
+  useEffect(() => {
+    //setRefreshing(true);
+    getData(); // Obtiene los datos del plan nuevamente, incluyendo los nuevos asistentes
+    //setRefreshing(false);
+  }, [key]);
 
   return (
-    <View style={[{ paddingTop: insets.top }]}>
+    <View key={key} style={[{ paddingTop: insets.top }]}>
         <View style={styles.navContainer}>
             <TouchableOpacity onPress={() => router.replace("/")}>
             <BlurView intensity={100} style={styles.blurContainer}>
@@ -85,13 +108,29 @@ export default function CommentScreen() {
             </TouchableOpacity>
         </View>
 
-        <ScrollView>
-        {notificaciones.map((notificacion, index) => (
-          <View key={index} style={styles.notificationCard}>
-            <Text style={styles.notificationTitle}>{notificacion.titulo}</Text>
-            <Text style={styles.notificationMessage}>{notificacion.mensaje}</Text>
-          </View>
-        ))}
+        <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }
+          >
+        {notificaciones.map((notificacion, index) => {
+          console.log("Notificacion: ", notificacion);
+          console.log(`Notificación ${index} leída:`, notificacion.leida, notificacion.idUsuario);  // Esto imprimirá si cada notificación está leída o no
+          return notificacion.leida ? (
+            <View key={index} style={styles.notificationCard}>
+              <Text style={styles.notificationTitle}>{notificacion.titulo}</Text>
+              <Text style={styles.notificationMessage}>{notificacion.mensaje}</Text>
+            </View>
+          ) : (
+            <View key={index} style={styles.notificationCardUnread}>
+              <Text style={styles.notificationTitle}>{notificacion.titulo}</Text>
+              <Text style={styles.notificationMessage}>{notificacion.mensaje}</Text>
+            </View>
+          );
+        })}
       </ScrollView>
 
         
@@ -129,7 +168,21 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
     },
     notificationCard: {
-      backgroundColor: "#F9F9F9",
+      //backgroundColor: "black",
+      borderRadius: 10,
+      padding: 15,
+      marginVertical: 5,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 1.41,
+      elevation: 2,
+    },
+    notificationCardUnread: {
+      backgroundColor: "#FDF2E9",
       borderRadius: 10,
       padding: 15,
       marginVertical: 5,
