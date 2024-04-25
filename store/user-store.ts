@@ -1,7 +1,7 @@
 import { User } from "@/types/User.type";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { zustandStorage } from "./asyncStorage";
+import { zustandUserStorage } from "./asyncUserStorage";
 
 export interface UserStore extends User {
   update: (user: Partial<User>) => void;
@@ -26,7 +26,7 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: "user-storage",
-      storage: createJSONStorage(() => zustandStorage),
+      storage: createJSONStorage(() => zustandUserStorage),
     }
   )
 );
