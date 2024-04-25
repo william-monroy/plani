@@ -27,8 +27,8 @@ const step3 = () => {
 
   const [userLocation, setUserLocation] = useState<any>(null);
   const [location, setLocation] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
+    latitude: 42.8006,
+    longitude:  -1.6365,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
