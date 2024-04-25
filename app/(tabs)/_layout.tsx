@@ -80,8 +80,7 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="profile"
         options={{
-          headerTitle: "Perfil",
-          title: "Perfil",
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <Octicons
               name="person"
