@@ -5,15 +5,24 @@ import {
   getDocs,
   query,
   where,
-  onSnapshot } from "firebase/firestore";
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "../../_infrastructure/firebase";
-import { View, Text, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import { User } from "@/types/User.type";
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { Plan } from "@/types/Plan.type";
 import { PlanCard } from "@/components/PlanCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Rating from "@/components/UserRating";
+import { PlanRowCard } from "@/components/PlanRowCard";
 
 const UserPage = () => {
   const { id } = useLocalSearchParams();
@@ -26,16 +35,15 @@ const UserPage = () => {
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-
   const [routes] = useState([
-    { key: 'myPlans', title: 'Sus Planes' },
-    { key: 'joinedPlans', title: 'Apuntado' },
+    { key: "myPlans", title: "Sus Planes" },
+    { key: "joinedPlans", title: "Apuntado" },
   ]);
 
-  const initialLayout = { width: Dimensions.get('window').width };
+  const initialLayout = { width: Dimensions.get("window").width };
 
   const MyPlansRoute = () => (
-    <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
+    <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
           <Text>Loading users...</Text>
@@ -44,8 +52,9 @@ const UserPage = () => {
             {planes
               .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
               .map((plan: Plan, key: number) => (
-              <PlanCard key={key} {...plan} />
-            ))}
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
+              ))}
           </ScrollView>
         )}
       </View>
@@ -53,20 +62,21 @@ const UserPage = () => {
   );
 
   const JoinedPlansRoute = () => (
-    <View style={[styles.scene, { backgroundColor: '#ffffff' }]}>
+    <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
           <Text>Loading users...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
-          {planes
-            .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-            .map((plan: Plan, key: number) => (
-              <PlanCard key={key} {...plan} />
-            ))}
+            {planes
+              .filter((plan: Plan) => plan.guests.includes(user.uid as string))
+              .map((plan: Plan, key: number) => (
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
+              ))}
           </ScrollView>
         )}
-        </View>
+      </View>
     </View>
   );
 
@@ -94,7 +104,7 @@ const UserPage = () => {
     try {
       const q = query(collection(db, "Usuarios"), where("uid", "==", id));
       const querySnapshot = await getDocs(q);
-      const user = querySnapshot.docs.map(doc => doc.data() as User);
+      const user = querySnapshot.docs.map((doc) => doc.data() as User);
       if (user.length > 0) {
         const userData = user[0];
         setUser(userData);
@@ -102,7 +112,7 @@ const UserPage = () => {
       }
     } catch (error) {
       console.error("Error getting documents: ", error);
-    };
+    }
   };
 
   useEffect(() => {
@@ -115,8 +125,10 @@ const UserPage = () => {
       {/* Foto y nombre del usuario */}
       <View style={styles.userInfo}>
         <Image source={{ uri: image as string }} style={styles.userPhoto} />
-        <View style={{'gap': 10, 'alignItems': 'center'}}>
-          <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
+        <View style={{ gap: 10, alignItems: "center" }}>
+          <Text style={styles.userName}>
+            {user.firstName} {user.lastName}
+          </Text>
           <Rating size={20} value={user.score as number} />
         </View>
       </View>
@@ -126,7 +138,7 @@ const UserPage = () => {
         renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={initialLayout}
-        renderTabBar={props => (
+        renderTabBar={(props) => (
           <TabBar
             {...props}
             indicatorStyle={styles.indicator}
@@ -145,25 +157,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   scene: {
     flex: 4,
   },
   tabBar: {
-    backgroundColor: 'white', // Fondo blanco para un look minimalista
+    backgroundColor: "white", // Fondo blanco para un look minimalista
     shadowOpacity: 0, // Quitamos cualquier sombra para un diseño más limpio
     elevation: 0, // Eliminamos la elevación en Android
     borderBottomWidth: 1, // Añadimos un borde sutil en la parte inferior
-    borderBottomColor: '#FF9500', // El color del borde es naranja para mantener tu tema
+    borderBottomColor: "#FF9500", // El color del borde es naranja para mantener tu tema
   },
   indicator: {
-    backgroundColor: '#FF9500', // Color del indicador de la pestaña activa en naranja
+    backgroundColor: "#FF9500", // Color del indicador de la pestaña activa en naranja
     height: 3, // Hacemos el indicador un poco más grueso para que destaque
   },
   label: {
-    fontWeight: 'bold', // Texto en negrita para las etiquetas de las pestañas
-    textTransform: 'none', // Mantenemos el caso de texto original sin transformar
+    fontWeight: "bold", // Texto en negrita para las etiquetas de las pestañas
+    textTransform: "none", // Mantenemos el caso de texto original sin transformar
   },
   userInfo: {
     marginTop: "5%",
@@ -175,19 +187,19 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 50,
-    marginRight: 20
+    marginRight: 20,
   },
   userName: {
     fontSize: 24,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   label2: {
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 10
+    marginTop: 10,
   },
   info: {
-    fontSize: 16
+    fontSize: 16,
   },
   container2: {
     marginTop: 20, // Ajustamos el margen superior para separarlo de otros elementos

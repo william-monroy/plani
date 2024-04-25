@@ -27,6 +27,8 @@ import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { Plan } from "@/types/Plan.type";
 import { PlanCard } from "@/components/PlanCard";
 import Rating from "@/components/UserRating";
+import { PlanRowCard } from "@/components/PlanRowCard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const ProfilePage = () => {
   const { avatar } = useUserStore.getState();
@@ -44,6 +46,8 @@ export const ProfilePage = () => {
     { key: "joinedPlans", title: "Apuntado" },
   ]);
 
+  const insets = useSafeAreaInsets();
+
   const initialLayout = { width: Dimensions.get("window").width };
 
   const MyPlansRoute = () => (
@@ -54,13 +58,14 @@ export const ProfilePage = () => {
           Planes cercanos
         </Text> */}
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Loading plans...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
             {planes
               .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
               .map((plan: Plan, key: number) => (
-                <PlanCard key={key} {...plan} />
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
               ))}
           </ScrollView>
         )}
@@ -72,13 +77,14 @@ export const ProfilePage = () => {
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Loading plans...</Text>
         ) : (
           <ScrollView style={styles.plans_index}>
             {planes
               .filter((plan: Plan) => plan.guests.includes(user.uid as string))
               .map((plan: Plan, key: number) => (
-                <PlanCard key={key} {...plan} />
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
               ))}
           </ScrollView>
         )}
@@ -213,7 +219,7 @@ export const ProfilePage = () => {
   const avatarUri = useUserStore.getState().avatar;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Foto y nombre del usuario */}
       <View style={styles.userInfo}>
         <TouchableOpacity onPress={pickImage}>
@@ -260,7 +266,8 @@ export const ProfilePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    marginTop: 20,
     backgroundColor: "#fff",
   },
   scene: {
