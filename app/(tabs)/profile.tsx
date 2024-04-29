@@ -6,7 +6,6 @@ import {
   getDoc,
   updateDoc,
   onSnapshot,
-  addDoc,
 } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db, storage } from "../_infrastructure/firebase";
@@ -14,10 +13,8 @@ import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   Pressable,
-  TouchableOpacity,
   Dimensions,
   ScrollView,
   RefreshControl,
@@ -27,8 +24,9 @@ import { User } from "@/types/User.type";
 import * as ImagePicker from "expo-image-picker";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { Plan } from "@/types/Plan.type";
-import { PlanCard } from "@/components/PlanCard";
 import Rating from "@/components/UserRating";
+import { PlanRowCard } from "@/components/PlanRowCard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const ProfilePage = () => {
   const { avatar } = useUserStore.getState();
@@ -49,6 +47,8 @@ export const ProfilePage = () => {
     { key: "joinedPlans", title: "Apuntado" },
   ]);
 
+  const insets = useSafeAreaInsets();
+
   const initialLayout = { width: Dimensions.get("window").width };
 
   const MyPlansRoute = () => (
@@ -59,21 +59,19 @@ export const ProfilePage = () => {
           Planes cercanos
         </Text> */}
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Loading plans...</Text>
         ) : (
           <ScrollView
             style={styles.plans_index}
             refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-              />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
             {planes
               .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
               .map((plan: Plan, key: number) => (
-                <PlanCard key={key} {...plan} />
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
               ))}
           </ScrollView>
         )}
@@ -81,26 +79,23 @@ export const ProfilePage = () => {
     </View>
   );
 
-
   const JoinedPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Loading plans...</Text>
         ) : (
           <ScrollView
             style={styles.plans_index}
             refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-              />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
             {planes
               .filter((plan: Plan) => plan.guests.includes(user.uid as string))
               .map((plan: Plan, key: number) => (
-                <PlanCard key={key} {...plan} />
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
               ))}
           </ScrollView>
         )}
@@ -109,7 +104,7 @@ export const ProfilePage = () => {
   );
 
   const onRefresh = () => {
-    getData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
+    getData(); // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
   };
 
   const getData = async () => {
@@ -171,7 +166,7 @@ export const ProfilePage = () => {
     const userId = user.uid;
     try {
       const uri = img;
-      console.log("slkdfhksadjlkflkasdfsdfdsf")
+      console.log("slkdfhksadjlkflkasdfsdfdsf");
       console.log("URI: ", uri);
       const blob = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -189,7 +184,6 @@ export const ProfilePage = () => {
       //const storageRef = ref(storage, `planes/${userId}/${filename}`);
       const storageRef = ref(storage, `users/${userId}/${filename}`);
       const uploadTask = uploadBytesResumable(storageRef, blob as Blob);
-
 
       uploadTask.on(
         "state_changed",
@@ -210,16 +204,15 @@ export const ProfilePage = () => {
           console.error("Error uploading image: ", error);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(
-            async (downloadURL) => {
-              console.log("///////////////////////////////////////////")
-              console.log("File available at", downloadURL);
-              setImageUrl(downloadURL);
-              const docRef = doc(db, "Usuarios", userId as string);
-              updateDoc(docRef, { avatar: imageUrl });
-              getUserData();
-            });
-          }
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            console.log("///////////////////////////////////////////");
+            console.log("File available at", downloadURL);
+            setImageUrl(downloadURL);
+            const docRef = doc(db, "Usuarios", userId as string);
+            updateDoc(docRef, { avatar: imageUrl });
+            getUserData();
+          });
+        }
       );
     } catch (error) {
       console.error("Error uploading image: ", error);
@@ -255,31 +248,26 @@ export const ProfilePage = () => {
   const avatarUri = useUserStore.getState().avatar;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {isLoadingUserData ? (
         <Text>Loading user data...</Text>
       ) : (
         <View>
-        <View style={styles.userInfo}>
-          <TouchableOpacity onPress={pickImage}>
-            <Image source={{ uri: image as string }} style={styles.userPhoto} />
-          </TouchableOpacity>
           <View style={{ gap: 10, alignItems: "center" }}>
             <Text style={styles.userName}>
-              {user.firstName} {user.lastName}
+              {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
             </Text>
             <Rating size={20} value={user.score as number} />
           </View>
-        </View>
 
-        <View style={styles.container2}>
-          <Pressable
-            style={styles.button}
-            onPress={async () => await signOut(getAuth())}
-          >
-            <Text style={styles.textButton}>Cerrar sesión</Text>
-          </Pressable>
-        </View>
+          <View style={styles.container2}>
+            <Pressable
+              style={styles.button}
+              onPress={async () => await signOut(getAuth())}
+            >
+              <Text style={styles.textButton}>Cerrar sesión</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 
@@ -306,7 +294,8 @@ export const ProfilePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    marginTop: 20,
     backgroundColor: "#fff",
   },
   scene: {
