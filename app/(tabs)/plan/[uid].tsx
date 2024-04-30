@@ -15,6 +15,7 @@ import { BlurView } from "expo-blur";
 import {
   collection,
   doc,
+  addDoc,
   getDoc,
   getDocs,
   query,
@@ -47,8 +48,15 @@ export default function PlanScreen() {
   const nuevoAsistente = async () => {
     setRefreshing(true);
     const userId = useUserStore.getState().uid;
+    const userName =
+      useUserStore.getState().firstName +
+      " " +
+      useUserStore.getState().lastName;
     const planId = planData.uid;
+    const planAdmin = planData.idAdmin;
     //console.log(userId + " " + planId);
+
+    //
 
     const planRef = doc(db, "Planes", planId);
 
@@ -62,6 +70,23 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
     }
+
+    const notificatioNRef = collection(db, "Notificaciones");
+    const nuevaNotificacion = {
+      idUsuario: planAdmin,
+      titulo: "Nuevo asistente",
+      mensaje:
+        "El usuario " +
+        userName +
+        ' se ha unido al plan "' +
+        planData.name +
+        '"',
+      fecha: new Date(),
+      leida: false,
+    };
+
+    await addDoc(notificatioNRef, nuevaNotificacion);
+
     setRefreshing(false);
 
     // const q = query(collection(db, "Planes"), where("uid", "==", uid));
@@ -73,6 +98,11 @@ export default function PlanScreen() {
     setRefreshing(true);
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
+    const userName =
+      useUserStore.getState().firstName +
+      " " +
+      useUserStore.getState().lastName;
+    const planAdmin = planData.idAdmin;
 
     const planRef = doc(db, "Planes", planId);
 
@@ -87,6 +117,22 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error borrando asistente: ", error);
     }
+
+    const notificatioNRef = collection(db, "Notificaciones");
+    const nuevaNotificacion = {
+      idUsuario: planAdmin,
+      titulo: "Nuevo asistente",
+      mensaje:
+        "El usuario " +
+        userName +
+        ' se ha salido del plan "' +
+        planData.name +
+        '"',
+      fecha: new Date(),
+      leida: false,
+    };
+
+    await addDoc(notificatioNRef, nuevaNotificacion);
     setRefreshing(false);
   };
 
@@ -130,7 +176,7 @@ export default function PlanScreen() {
   };
 
   const onRefresh = () => {
-    getPlanData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
+    getPlanData(); // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
   };
 
   useEffect(() => {
@@ -171,18 +217,18 @@ export default function PlanScreen() {
           )}
         </TouchableOpacity>
       </View>
-      <ScrollView style={{ flex: 1 }} refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-              />
-            }>
+      <ScrollView
+        style={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.spacer} />
         <View style={styles.contentCard}>
           <Text style={styles.titleCard}>{planData.name}</Text>
-          {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
-          (
-            <Rating size={24} value={planData.score as number}/>
+          {new Date((planData.dateEnd?.seconds as number) * 1000) <
+          new Date() ? (
+            <Rating size={24} value={planData.score as number} />
           ) : null}
           <Text style={styles.subTitleCard}>Detalles</Text>
           <Text style={styles.cardDate}>
@@ -238,13 +284,15 @@ export default function PlanScreen() {
             })}
           </ScrollView>
           <View style={styles.container2}>
-          {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
-          (
-            <Pressable style={styles.button} onPress={() => router.push(`/comments/${uid}`)}>
-              <Text style={styles.textButton}>Comentarios</Text>
-            </Pressable>
-          ) : (
-            planData.idAdmin != useUserStore.getState().uid ? (
+            {new Date((planData.dateEnd?.seconds as number) * 1000) <
+            new Date() ? (
+              <Pressable
+                style={styles.button}
+                onPress={() => router.push(`/comments/${uid}`)}
+              >
+                <Text style={styles.textButton}>Comentarios</Text>
+              </Pressable>
+            ) : planData.idAdmin != useUserStore.getState().uid ? (
               planAdded === false ? (
                 <Pressable style={styles.button} onPress={nuevoAsistente}>
                   <Text style={styles.textButton}>Apuntarme</Text>
@@ -254,8 +302,7 @@ export default function PlanScreen() {
                   <Text style={styles.textButton}>Salir del plan</Text>
                 </Pressable>
               )
-            ) : null
-          )}
+            ) : null}
           </View>
         </View>
       </ScrollView>

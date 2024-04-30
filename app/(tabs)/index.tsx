@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
   Platform,
   RefreshControl,
 } from "react-native";
@@ -19,6 +20,7 @@ import { useUserStore } from "@/store/user-store";
 import { PlanCard } from "@/components/PlanCard";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
+
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -30,7 +32,7 @@ const HomePage = () => {
   const [view, setView] = useState<"list" | "map">("map");
 
   const { firstName, gender } = useUserStore((state) => state);
-
+  const uid = useUserStore.getState().uid;
   const getData = async () => {
     setRefreshing(true);
     const collectionRef = collection(db, "Planes");
@@ -104,6 +106,9 @@ const HomePage = () => {
           Bienvenid{gender === "male" ? "o" : gender === "female" ? "a" : "x"}{" "}
           {firstName.split(" ")[0]} 👋
         </Text>
+        <TouchableOpacity onPress={() => router.push(`/notificaciones/${uid}`)}>
+          <Ionicons name="notifications-outline" size={24} color="black" />
+        </TouchableOpacity>
       </View>
       <View style={styles.container2}>
         <View style={[styles.row, { marginBottom: 15 }]}>
