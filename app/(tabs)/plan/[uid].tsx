@@ -7,6 +7,7 @@ import {
   Pressable,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,7 +26,7 @@ import {
 import { db } from "@/app/_infrastructure/firebase";
 import { Plan } from "@/types/Plan.type";
 import { useEffect, useState } from "react";
-import Rating from "@/components/Rating";
+import Rating from "@/components/UserRating";
 import { User } from "@/types/User.type";
 import { useUserStore } from "@/store/user-store";
 import { activities } from "@/utils/constants";
@@ -34,16 +35,17 @@ export default function PlanScreen() {
   const insets = useSafeAreaInsets();
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
-  const [liked, setLiked] = useState<boolean>(false);
   const [guests, setGuests] = useState<User[]>([] as User[]);
   const [admin, setAdmin] = useState<User>({} as User);
   const [planAdded, setPlanAdded] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const { uid } = useLocalSearchParams();
 
   const [refreshData, setRefreshData] = useState(0); // Añade este estado
 
   const nuevoAsistente = async () => {
+    setRefreshing(true);
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
     //console.log(userId + " " + planId);
@@ -60,6 +62,7 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
     }
+    setRefreshing(false);
 
     // const q = query(collection(db, "Planes"), where("uid", "==", uid));
     // const querySnapshot = await getDocs(q);
@@ -67,6 +70,7 @@ export default function PlanScreen() {
   };
 
   const borrarAsistente = async () => {
+    setRefreshing(true);
     const userId = useUserStore.getState().uid;
     const planId = planData.uid;
 
@@ -83,9 +87,11 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error borrando asistente: ", error);
     }
+    setRefreshing(false);
   };
 
   const getPlanData = async () => {
+    setRefreshing(true);
     const userId = useUserStore.getState().uid;
     try {
       const q = query(collection(db, "Planes"), where("uid", "==", uid));
@@ -120,6 +126,11 @@ export default function PlanScreen() {
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
+    setRefreshing(false);
+  };
+
+  const onRefresh = () => {
+    getPlanData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
   };
 
   useEffect(() => {
@@ -159,21 +170,20 @@ export default function PlanScreen() {
             />
           )}
         </TouchableOpacity>
-        {/* <TouchableOpacity onPress={() => setLiked(!liked)}>
-          <BlurView intensity={60} style={styles.blurContainer} tint="dark">
-            <Ionicons
-              name={liked ? "heart" : "heart-outline"}
-              size={24}
-              color={liked ? "#EF4F5D" : "#fffdfd"}
-            />
-          </BlurView>
-        </TouchableOpacity> */}
       </View>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            }>
         <View style={styles.spacer} />
         <View style={styles.contentCard}>
           <Text style={styles.titleCard}>{planData.name}</Text>
-          <Rating size={24} />
+          {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
+          (
+            <Rating size={24} value={planData.score as number}/>
+          ) : null}
           <Text style={styles.subTitleCard}>Detalles</Text>
           <Text style={styles.cardDate}>
             {new Date(
@@ -228,7 +238,13 @@ export default function PlanScreen() {
             })}
           </ScrollView>
           <View style={styles.container2}>
-            {planData.idAdmin != useUserStore.getState().uid ? (
+          {new Date((planData.dateEnd?.seconds as number) * 1000) < new Date() ?
+          (
+            <Pressable style={styles.button} onPress={() => router.push(`/comments/${uid}`)}>
+              <Text style={styles.textButton}>Comentarios</Text>
+            </Pressable>
+          ) : (
+            planData.idAdmin != useUserStore.getState().uid ? (
               planAdded === false ? (
                 <Pressable style={styles.button} onPress={nuevoAsistente}>
                   <Text style={styles.textButton}>Apuntarme</Text>
@@ -238,7 +254,8 @@ export default function PlanScreen() {
                   <Text style={styles.textButton}>Salir del plan</Text>
                 </Pressable>
               )
-            ) : null}
+            ) : null
+          )}
           </View>
         </View>
       </ScrollView>
@@ -337,7 +354,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#FF9500", // Cambiado a un naranja más vibrante
     borderRadius: 60, // Bordes más redondeados para un look moderno
-    height: 40,
+    height: 45,
     width: "75%",
     display: "flex",
     alignItems: "center",
