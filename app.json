@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "dev.wimo.plani",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceder a tu galería para seleccionar imágenes."
+        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceder a tu galería para seleccionar imágenes.",
+        "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceder a tu ubicación para mostrarte los eventos cercanos."
       }
     },
     "android": {
@@ -25,7 +26,7 @@
         "foregroundImage": "./assets/logo_plani.png",
         "backgroundColor": "#FF9500"
       },
-      "permissions": ["READ_EXTERNAL_STORAGE"]
+      "permissions": ["READ_EXTERNAL_STORAGE", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "favicon": "./assets/logo_plani.png"
@@ -35,7 +36,13 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "Plani necesita acceder a tu galería para seleccionar imágenes."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Plani necesita acceder a tu ubicación para mostrarte los eventos cercanos."
         }
       ]
     ]

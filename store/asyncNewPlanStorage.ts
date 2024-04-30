@@ -1,15 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StateStorage } from "zustand/middleware";
 
-const id = "user-storage";
+const id = "newPlan-storage";
 
-export const store = {
+export const NewPlanStore = {
   async setItem(key: string, value: string) {
     try {
-      let user = JSON.parse((await AsyncStorage.getItem(id)) || "{}");
-      if (user) {
-        user[key] = value;
-        await AsyncStorage.setItem(id, JSON.stringify(user));
+      let plan = JSON.parse((await AsyncStorage.getItem(id)) || "{}");
+      if (plan) {
+        plan[key] = value;
+        await AsyncStorage.setItem(id, JSON.stringify(plan));
       } else {
         await AsyncStorage.setItem(id, JSON.stringify({ [key]: value }));
       }
@@ -19,32 +19,32 @@ export const store = {
   },
   async getItem(key: string) {
     try {
-      let user = JSON.parse((await AsyncStorage.getItem(id)) || "{}");
-      return user[key];
+      let plan = JSON.parse((await AsyncStorage.getItem(id)) || "{}");
+      return plan[key];
     } catch (e) {
       console.error(`Error getting item: ${e}`);
     }
   },
   async removeItem(key: string) {
     try {
-      let user = JSON.parse((await AsyncStorage.getItem(id)) || "{}");
-      delete user[key];
-      await AsyncStorage.setItem(id, JSON.stringify(user));
+      let plan = JSON.parse((await AsyncStorage.getItem(id)) || "{}");
+      delete plan[key];
+      await AsyncStorage.setItem(id, JSON.stringify(plan));
     } catch (e) {
       console.error(`Error removing item: ${e}`);
     }
   },
 };
 
-export const zustandStorage: StateStorage = {
+export const zustandNewPlanStorage: StateStorage = {
   setItem: async (key: string, value: string) => {
-    return await store.setItem(key, value);
+    return await NewPlanStore.setItem(key, value);
   },
   getItem: async (key: string) => {
-    const value = await store.getItem(key);
+    const value = await NewPlanStore.getItem(key);
     return value ?? null;
   },
   removeItem: async (key: string) => {
-    return await store.removeItem(key);
+    return await NewPlanStore.removeItem(key);
   },
 };
