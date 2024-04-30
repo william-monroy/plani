@@ -16,6 +16,7 @@ import {
   Dimensions,
   ScrollView,
   RefreshControl,
+  Switch,
 } from "react-native";
 import { User } from "@/types/User.type";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
@@ -35,6 +36,10 @@ const UserPage = () => {
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+  const [isEnabledMyPlans, setIsEnabledMyPlans] = useState(true);
+  const toggleSwitchMyPlans = () => setIsEnabledMyPlans((previousState) => !previousState);
+  const [isEnabledJoined, setIsEnabledJoined] = useState(true);
+  const toggleSwitchJoined = () => setIsEnabledJoined((previousState) => !previousState);
 
   const [routes] = useState([
     { key: "myPlans", title: "Sus Planes" },
@@ -58,21 +63,40 @@ const UserPage = () => {
         ) : (
           <View style={styles.plans_index}>
             <ScrollView
-              style={styles.plans_index}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshData}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {planes
-                .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-                .map((plan: Plan, key: number) => (
-                  // <PlanCard key={key} {...plan} />
-                  <PlanRowCard key={key} {...plan} />
-                ))}
-            </ScrollView>
+          style={styles.plans_index}
+          refreshControl={
+            <RefreshControl
+            refreshing={refreshData}
+            onRefresh={handleRefresh} />
+          }
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <Text style={{marginTop: 12}}>Mostrar planes pasados</Text>
+            <Switch
+              trackColor={{ false: '#767577', true: '#85C1E9' }}
+              thumbColor={isEnabledMyPlans ? 'orange' : '#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitchMyPlans}
+              value={isEnabledMyPlans}
+            />
+          </View>
+          {isEnabledMyPlans ? (
+            planes
+            .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+            .map((plan: Plan, key: number) => (
+              // <PlanCard key={key} {...plan} />
+              <PlanRowCard key={key} {...plan} />
+            ))
+          ) : (
+            planes
+              .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+              .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
+              .map((plan: Plan, key: number) => (
+                // <PlanCard key={key} {...plan} />
+                <PlanRowCard key={key} {...plan} />
+              ))
+          )}
+        </ScrollView>
           </View>
         )}
       </View>
@@ -85,14 +109,41 @@ const UserPage = () => {
         {isLoading ? (
           <Text>Cargando planes...</Text>
         ) : (
-          <ScrollView style={styles.plans_index}>
-            {planes
+          <ScrollView
+          style={styles.plans_index}
+          refreshControl={
+            <RefreshControl
+            refreshing={refreshData}
+            onRefresh={handleRefresh} />
+          }
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <Text style={{marginTop: 12}}>Mostrar planes pasados</Text>
+            <Switch
+              trackColor={{ false: '#767577', true: '#85C1E9' }}
+              thumbColor={isEnabledJoined ? 'orange' : '#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitchJoined}
+              value={isEnabledJoined}
+            />
+          </View>
+          {isEnabledJoined ? (
+            planes
+            .filter((plan: Plan) => plan.guests.includes(user.uid as string))
+            .map((plan: Plan, key: number) => (
+              // <PlanCard key={key} {...plan} />
+              <PlanRowCard key={key} {...plan} />
+            ))
+          ) : (
+            planes
               .filter((plan: Plan) => plan.guests.includes(user.uid as string))
+              .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
               .map((plan: Plan, key: number) => (
                 // <PlanCard key={key} {...plan} />
                 <PlanRowCard key={key} {...plan} />
-              ))}
-          </ScrollView>
+              ))
+          )}
+        </ScrollView>
         )}
       </View>
     </View>

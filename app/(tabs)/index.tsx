@@ -37,12 +37,14 @@ const HomePage = () => {
     setRefreshing(true);
     const collectionRef = collection(db, "Planes");
 
-    await onSnapshot(collectionRef, async (data) => {
+    onSnapshot(collectionRef, async (data) => {
       setPlanes(
-        await data.docs.map((item) => {
-          const planData = { ...item.data(), id: item.id } as unknown;
-          return planData as Plan;
-        })
+        data.docs
+          .map((item) => {
+            const planData = { ...item.data(), id: item.id } as unknown;
+            return planData as Plan;
+          })
+          .filter((item) => new Date((item.dateEnd?.seconds as number) * 1000) > new Date())
       );
       console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
