@@ -1,19 +1,12 @@
 import { db } from "@/app/_infrastructure/firebase";
-import { PlanCard } from "@/components/PlanCard";
 import { SolicitudCard } from "@/components/SolicitudCard";
-import { useUserStore } from "@/store/user-store";
-import { Plan } from "@/types/Plan.type";
 import { Solicitud } from "@/types/Solicitud";
 import { useLocalSearchParams } from "expo-router";
-import { User } from "firebase/auth";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   onSnapshot,
   query,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -28,7 +21,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SolicitudScreen() {
   const insets = useSafeAreaInsets();
-  //const planId = id;
 
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,13 +105,6 @@ export default function SolicitudScreen() {
     }
     setIsLoading(false);
   };
-  // Función para recargar los datos
-  const reloadData = () => {
-    setIsLoading(true);
-    setsolicitudesId([]);
-    setSolicitudes([]);
-    getSolicitudData();
-  };
 
   const onRefresh = (x?: any) => {
     //getData();  // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
@@ -144,7 +129,7 @@ export default function SolicitudScreen() {
   };
 
   useEffect(() => {
-    reloadData();
+    // reloadData();
     console.log(solicitudes);
     console.log("esteeeeeeee ---- " + id);
   }, [id]); // Eliminar refreshData como dependencia
@@ -164,30 +149,11 @@ export default function SolicitudScreen() {
           lastName: doc.data().lastName,
           planId: id,
         }));
-        console.log("userData:",userData)
+        console.log("userData:", userData);
         setSolicitudes(userData);
       } catch (error) {
         console.log("Non User data ", error);
       }
-      //try {
-      //  const q = query(
-      //    collection(db, "Usuarios"),
-      //    where("uid", "in", solicitudesId)
-      //  );
-      //  const querySnapshot = await getDocs(q);
-      //  const userData: Solicitud[] = querySnapshot.docs.map((doc) => ({
-      //    idUsuario: doc.id,
-      //    avatar: doc.data().avatar,
-      //    // Suponiendo que tienes los campos "firstName" y "lastName" en tus documentos de usuario
-      //    firstName: doc.data().firstName,
-      //    lastName: doc.data().lastName,
-      //    planId: id,
-      //  }));
-      //  console.log("Esto son los usuarios extraidos:  ", userData);
-      //  setSolicitudes(userData);
-      //} catch (error) {
-      //  console.log("Non User data ", error);
-      //}
       setIsLoading(false);
     };
 
@@ -209,7 +175,7 @@ export default function SolicitudScreen() {
         ) : (
           solicitudes.map((solicitud, index) => (
             <SolicitudCard
-              onRefreshData={reloadData}
+              // onRefreshData={reloadData}
               key={index}
               avatar={
                 solicitud.avatar ||
@@ -241,23 +207,3 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
 });
-function onDelete(id: any) {
-  throw new Error("Function not implemented.");
-}
-
-function async(data: any): {
-  next?:
-    | ((
-        snapshot: import("@firebase/firestore").QuerySnapshot<
-          import("@firebase/firestore").DocumentData,
-          import("@firebase/firestore").DocumentData
-        >
-      ) => void)
-    | undefined;
-  error?:
-    | ((error: import("@firebase/firestore").FirestoreError) => void)
-    | undefined;
-  complete?: (() => void) | undefined;
-} {
-  throw new Error("Function not implemented.");
-}

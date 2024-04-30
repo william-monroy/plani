@@ -1,43 +1,25 @@
 import { db } from "@/app/_infrastructure/firebase";
 import { Solicitud } from "@/types/Solicitud";
-import { User } from "@/types/User.type";
-import { router, useNavigation } from "expo-router";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 export const SolicitudCard = (props: Solicitud) => {
-  const [refreshCount, setRefreshCount] = useState(0);
-  const [aux, setAux] = useState<String>();
-
-  const navigation = useNavigation()
-
   interface Solicitud {
     // Otras propiedades de Solicitud
     guests: string[];
-    solicitud: string[];
-    onRefreshData: () => void;
+    requests: string[];
   }
 
   const aceptarSol = async () => {
     console.log("eliminamos de solicitud del plan", props.idUsuario);
-    setAux(props.idUsuario.toString());
 
     try {
-      const docRef = doc(db, "Planes", props.planId.toString());
+      const docRef = doc(db, "Planes", props.planId);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         // Obtener los datos del documento
-        const docData = docSnap.data() as Solicitud;
+        const docData = docSnap.data();
 
         // Obtener la lista actual de invitados o crear una nueva si no existe
         const guests = docData.guests || [];
@@ -46,9 +28,10 @@ export const SolicitudCard = (props: Solicitud) => {
         const newData: Partial<Solicitud> = {
           ...docData, // Incluir todas las propiedades existentes
           guests: [...guests, props.idUsuario.toString()], // Agregar userId al campo guests
-          solicitud: docData.solicitud.filter(
-            (id: string) => id !== props.idUsuario
-          ), // Eliminar userId de la lista de solicitudes
+          requests:
+            docData.requests?.length === 1
+              ? []
+              : docData.requests.filter((id: string) => id !== props.idUsuario), // Eliminar userId de la lista de solicitudes
         };
 
         // Actualizar el documento con el nuevo objeto de datos
@@ -66,33 +49,28 @@ export const SolicitudCard = (props: Solicitud) => {
         error
       );
       throw error;
-    } 
+    }
   };
 
   const eliminarSol = async () => {
     console.log("eliminamos de solicitud del plan", props.idUsuario);
-    setAux(props.idUsuario);
-    console.log("El puto AUX : ", aux);
 
     try {
       // Obtener el documento
 
-      const docRef = doc(db, "Planes", props.planId.toString());
+      const docRef = doc(db, "Planes", props.planId);
       const docSnap = await getDoc(docRef);
       // Verificar si el documento existe
 
       if (docSnap.exists()) {
         // Obtener el vector del documento
         const datos = docSnap.data();
-
-        console.log("Aux : " + aux);
-        const nuevoVector = datos.solicitud.filter(
+        const nuevoVector = datos.requests.filter(
           (elem: String) => elem !== props.idUsuario
         );
         console.log("idUsuario: " + props.idUsuario);
 
-        // Actualizar el documento con el nuevo vector
-        await updateDoc(docRef, { solicitud: nuevoVector });
+        await updateDoc(docRef, { requests: nuevoVector });
 
         console.log("Elemento eliminado correctamente");
       } else {
@@ -102,15 +80,6 @@ export const SolicitudCard = (props: Solicitud) => {
       console.error("Error al eliminar elemento:", error);
     }
   };
-
-  useEffect(() => {
-    console.log("SolicitudCard props:", props);
-    console.log("Aux actualizado:", aux);
-  }, [refreshCount, aux]);
-
-  function onRefreshData() {
-    throw new Error("Function not implemented.");
-  }
 
   return (
     <View style={styles.container}>
@@ -122,8 +91,6 @@ export const SolicitudCard = (props: Solicitud) => {
         style={[styles.button, styles.greenButton]}
         onPress={() => {
           aceptarSol();
-          props.onRefreshData(props.idUsuario);
-          
         }}
       >
         <Text style={styles.buttonText}>Aceptar </Text>
@@ -134,8 +101,6 @@ export const SolicitudCard = (props: Solicitud) => {
         style={[styles.button, styles.redButton]}
         onPress={() => {
           eliminarSol();
-          console.log("Esto es props.idUsuario : " + props.idUsuario);
-          props.onRefreshData(props.idUsuario);
         }}
       >
         <Text style={styles.buttonText}>Rechazar</Text>

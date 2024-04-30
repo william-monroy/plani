@@ -17,9 +17,9 @@ export const PlanCard = (props: Plan) => {
     score,
   } = props;
 
-  useEffect(() => {
-    console.log("PlanCard props:", props);
-  }, []);
+  // useEffect(() => {
+  //   console.log("PlanCard props:", props);
+  // }, []);
 
   return (
     <TouchableOpacity
