@@ -26,7 +26,7 @@ const SolicitudesScreen = () => {
   const { planId } = useLocalSearchParams();
 
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getSolicitudes = async () => {
     // Lógica para obtener las solicitudes de un plan específico
@@ -35,7 +35,7 @@ const SolicitudesScreen = () => {
       const planRef = doc(db, `Planes/${planId}`);
       onSnapshot(planRef, async (doc) => {
         if (doc.exists()) {
-          const idUsuarios = doc.data()?.requests;
+          const idUsuarios = doc.data()?.solicitud;
           if (!idUsuarios || idUsuarios.length === 0) {
             console.log("No hay solicitudes pendientes");
             setSolicitudes([]);
@@ -71,6 +71,7 @@ const SolicitudesScreen = () => {
 
   useEffect(() => {
     getSolicitudes();
+
   }, [planId]);
 
   const insets = useSafeAreaInsets();

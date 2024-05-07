@@ -8,7 +8,7 @@ export const SolicitudCard = (props: Solicitud) => {
   interface Solicitud {
     // Otras propiedades de Solicitud
     guests: string[];
-    requests: string[];
+    solicitud: string[];
   }
 
   const aceptarSol = async () => {
@@ -29,10 +29,10 @@ export const SolicitudCard = (props: Solicitud) => {
         const newData: Partial<Solicitud> = {
           ...docData, // Incluir todas las propiedades existentes
           guests: [...guests, props.idUsuario.toString()], // Agregar userId al campo guests
-          requests:
-            docData.requests?.length === 1
+          solicitud:
+            docData.solicitud?.length === 1
               ? []
-              : docData.requests.filter((id: string) => id !== props.idUsuario), // Eliminar userId de la lista de solicitudes
+              : docData.solicitud.filter((id: string) => id !== props.idUsuario), // Eliminar userId de la lista de solicitudes
         };
 
         // Actualizar el documento con el nuevo objeto de datos
@@ -41,6 +41,7 @@ export const SolicitudCard = (props: Solicitud) => {
         console.log(
           "Usuario movido de la lista de solicitudes a la lista de invitados en Firestore"
         );
+        
       } else {
         console.log("El documento no existe en Firestore");
       }
@@ -66,12 +67,12 @@ export const SolicitudCard = (props: Solicitud) => {
       if (docSnap.exists()) {
         // Obtener el vector del documento
         const datos = docSnap.data();
-        const nuevoVector = datos.requests.filter(
+        const nuevoVector = datos.solicitud.filter(
           (elem: String) => elem !== props.idUsuario
         );
         console.log("idUsuario: " + props.idUsuario);
 
-        await updateDoc(docRef, { requests: nuevoVector });
+        await updateDoc(docRef, { solicitud: nuevoVector });
 
         console.log("Elemento eliminado correctamente");
       } else {

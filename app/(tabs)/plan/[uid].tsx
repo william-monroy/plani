@@ -38,8 +38,10 @@ export default function PlanScreen() {
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
   const [guests, setGuests] = useState<User[]>([] as User[]);
+  const [solicitudes,setSolicitud] = useState<User[]>([] as User[]);
   const [admin, setAdmin] = useState<User>({} as User);
   const [planAdded, setPlanAdded] = useState<boolean>(false);
+  const [planSol, setPlanSol] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const { uid } = useLocalSearchParams();
@@ -64,9 +66,9 @@ export default function PlanScreen() {
     try {
       // Actualiza el campo 'guests' añadiendo el 'userId' a la lista
       await updateDoc(planRef, {
-        guests: arrayUnion(userId),
+        solicitud: arrayUnion(userId),
       });
-      console.log("Asistente añadido con éxito");
+      console.log("Asistente añadido a solicitud con exito");
       setRefreshData((prev) => prev + 1); // Incrementa el contador para refrescar datos
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
@@ -111,9 +113,11 @@ export default function PlanScreen() {
       // Actualiza el campo 'guests' borrando el 'userId' a la lista
       await updateDoc(planRef, {
         guests: arrayRemove(userId),
+        solicitud: arrayRemove(userId)
       });
       console.log("Asistente borrado con éxito");
       setPlanAdded(false);
+      setPlanSol(false);
       setRefreshData((prev) => prev + 1); // Incrementa el contador para refrescar datos
     } catch (error) {
       console.error("Error borrando asistente: ", error);
@@ -159,6 +163,19 @@ export default function PlanScreen() {
           }
         }
         setGuests(guestsData);
+
+        const guestsSol: User[] = [];
+        for (const guestId of planData.solicitud) {
+          if (guestId === userId) setPlanSol(true);
+          const docRef = doc(db, "Usuarios", guestId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            guestsSol.push(docSnap.data() as User);
+          }
+        }
+        setSolicitud(guestsSol);
+
+
 
         let adminData: User = {} as User;
         const docRef = doc(db, "Usuarios", planData.idAdmin);
@@ -327,10 +344,18 @@ export default function PlanScreen() {
               </Pressable>
             ) : planData.idAdmin != useUserStore.getState().uid ? (
               planAdded === false ? (
+
+               planSol === true ?(
+
+                <Pressable style={styles.button} onPress={borrarAsistente}>
+                <Text style={styles.textButton}>Solicitado</Text>
+                </Pressable>
+              ) :(
+
                 <Pressable style={styles.button} onPress={nuevoAsistente}>
                   <Text style={styles.textButton}>Apuntarme</Text>
                 </Pressable>
-              ) : (
+              )) : (
                 <Pressable style={styles.button} onPress={borrarAsistente}>
                   <Text style={styles.textButton}>Salir del plan</Text>
                 </Pressable>
