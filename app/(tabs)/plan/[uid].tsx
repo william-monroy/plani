@@ -335,19 +335,6 @@ export default function PlanScreen() {
                   <Text style={styles.textButton}>Salir del plan</Text>
                 </Pressable>
               )
-            ) : null}
-          </View>
-          <View style={styles.container2}>
-            {planData.idAdmin != useUserStore.getState().uid ? (
-              planAdded === false ? (
-                <Pressable style={styles.button} onPress={nuevoAsistente}>
-                  <Text style={styles.textButton}>Apuntarme</Text>
-                </Pressable>
-              ) : (
-                <Pressable style={styles.button} onPress={borrarAsistente}>
-                  <Text style={styles.textButton}>Salir del plan</Text>
-                </Pressable>
-              )
             ) : admin.uid == planData.idAdmin ? (
               <Pressable
                 style={styles.button}
