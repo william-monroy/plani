@@ -31,6 +31,7 @@ import Rating from "@/components/UserRating";
 import { User } from "@/types/User.type";
 import { useUserStore } from "@/store/user-store";
 import { activities } from "@/utils/constants";
+import { Solicitud } from "@/types/Solicitud";
 
 export default function PlanScreen() {
   const insets = useSafeAreaInsets();
@@ -168,6 +169,12 @@ export default function PlanScreen() {
         }
         setAdmin(adminData);
         console.log(admin);
+        const idAdmins = querySnapshot.docs.map((doc) => doc.data().idAdmin);
+        console.log(planData.idAdmin);
+        console.log(admin.uid);
+        if (admin.uid == planData.idAdmin) {
+          console.log(admin.uid);
+        }
       }
     } catch (error) {
       console.error("Error getting documents: ", error);
@@ -178,6 +185,32 @@ export default function PlanScreen() {
   const onRefresh = () => {
     getPlanData(); // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
   };
+
+  const getUsersData = async () => {
+    try {
+      const q = query(
+        collection(db, "Usuarios"),
+        where("uid", "in", setSolicitudes)
+      );
+      const querySnapshot = await getDocs(q);
+      const userData: Solicitud[] = querySnapshot.docs.map((doc) => ({
+        idUsuario: doc.id,
+        avatar: doc.data().avatar,
+        // Suponiendo que tienes los campos "firstName" y "lastName" en tus documentos de usuario
+        firstName: doc.data().firstName,
+        lastName: doc.data().lastName,
+        planId: planData.uid,
+      }));
+      setSolicitudes(userData);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error getting users data: ", error);
+    }
+  };
+
+  // const q = query(collection(db, "Planes"), where("uid", "==", uid));
+  // const querySnapshot = await getDocs(q);
+  // const plans = querySnapshot.docs.map(doc => doc.data() as Plan);
 
   useEffect(() => {
     setPlanData({} as Plan); // Reinicia los datos del plan si es necesario
@@ -302,6 +335,13 @@ export default function PlanScreen() {
                   <Text style={styles.textButton}>Salir del plan</Text>
                 </Pressable>
               )
+            ) : admin.uid == planData.idAdmin ? (
+              <Pressable
+                style={styles.button}
+                onPress={() => router.push(`/solicitudes/${planData.uid}`)}
+              >
+                <Text style={styles.textButton}>Solicitudes</Text>
+              </Pressable>
             ) : null}
           </View>
         </View>
@@ -425,3 +465,10 @@ const styles = StyleSheet.create({
     color: "#FFFFFF", // Aseguramos que el texto sea blanco para mejor contraste
   },
 });
+function setSolicitudes(userData: Solicitud[]) {
+  throw new Error("Function not implemented.");
+}
+
+function setIsLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}

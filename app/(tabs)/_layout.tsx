@@ -53,6 +53,16 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="solicitudes/[planId]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="comments/[uid]"
         options={{
           headerShown: false,
