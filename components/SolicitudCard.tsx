@@ -1,6 +1,7 @@
 import { db } from "@/app/_infrastructure/firebase";
 import { Solicitud } from "@/types/Solicitud";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 export const SolicitudCard = (props: Solicitud) => {
@@ -81,10 +82,21 @@ export const SolicitudCard = (props: Solicitud) => {
     }
   };
 
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    let name = `${props?.firstName?.split(" ")[0]} ${props?.lastName}`;
+    if (name.length > 20) {
+      name = name.substring(0, 20) + "...";
+    }
+    setUsername(name);
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* Foto a la izquierda */}
       <Image source={{ uri: props.avatar.toString() }} style={styles.image} />
+      <Text style={styles.username}>{username}</Text>
 
       {/* Botón verde en el medio */}
       <TouchableOpacity
@@ -124,6 +136,10 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+  },
+  username: {
+    fontSize: 16,
+    width: 120,
   },
   button: {
     padding: 10,

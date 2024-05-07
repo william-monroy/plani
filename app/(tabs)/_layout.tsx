@@ -34,37 +34,45 @@ const TabsLayout = () => {
           headerShown: false,
           title: "Buscar",
           tabBarIcon: ({ focused }) => (
-            <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
+            <Octicons
+              name="search"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="plan/[uid]"
         options={{
-            headerShown: false,
-            tabBarStyle:{
-                display:"none",
-            },
-            href:null
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
-      {/* <Tabs.Screen
-        name="solicitudes/[id]"
+      <Tabs.Screen
+        name="solicitudes/[planId]"
         options={{
-            headerShown: false,
-            tabBarStyle:{
-                display:"none",
-            },
-            href:null
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
-      /> */}
+      />
       <Tabs.Screen
         name="newPlan"
         options={{
           title: "Subir",
           headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <Octicons name="diff-added" size={24} color={focused ? "orange" : "gray"}  />
+            <Octicons
+              name="diff-added"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
         }}
       />
@@ -80,7 +88,11 @@ const TabsLayout = () => {
           headerTitle: "Perfil",
           title: "Perfil",
           tabBarIcon: ({ focused }) => (
-            <Octicons name="person" size={24} color={focused ? "orange" : "gray"}  />
+            <Octicons
+              name="person"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
         }}
       />
