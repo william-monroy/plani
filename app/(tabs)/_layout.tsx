@@ -63,7 +63,27 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="newPlan"
+        name="comments/[uid]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="notificaciones/[uid]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step1"
         options={{
           title: "Subir",
           headerShown: false,
@@ -74,19 +94,23 @@ const TabsLayout = () => {
               color={focused ? "orange" : "gray"}
             />
           ),
+          tabBarStyle: {
+            display: "none",
+          },
         }}
       />
+
       <Tabs.Screen
         name="user/[id]"
         options={{
+          headerShown: false,
           href: null,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          headerTitle: "Perfil",
-          title: "Perfil",
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <Octicons
               name="person"
@@ -94,6 +118,36 @@ const TabsLayout = () => {
               color={focused ? "orange" : "gray"}
             />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step2"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step3"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step4"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
     </Tabs>
