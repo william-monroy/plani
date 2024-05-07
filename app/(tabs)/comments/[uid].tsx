@@ -69,9 +69,32 @@ export default function CommentScreen() {
       const planDocRef = doc(db, "Planes", planId);
       await setDoc(planDocRef, { score: score }, { merge: true });
       setRefreshData(refreshData + 1); // Incrementa el estado para forzar la recarga de datos
+      updateAdminScore();
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
+  }
+
+  const updateAdminScore = async () => {
+    const adminId = planData.idAdmin;
+    const planId = planData.uid;
+
+    try {
+      const qVal = query(collection(db, "Valoraciones"), where("idPlan", "==", planId));
+      const querySnapshotVal = await getDocs(qVal);
+      const valoraciones = querySnapshotVal.docs.map((doc) => doc.data() as Valoracion);
+
+      let score = 0;
+      for (const valoracion of valoraciones)
+        score += valoracion.score as number;
+      score /= valoraciones.length;
+
+      const userDocRef = doc(db, "Usuarios", adminId);
+      await setDoc(userDocRef, { score: score }, { merge: true });
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+    }
+
   }
 
   const addComment = async () => {

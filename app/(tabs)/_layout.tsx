@@ -34,50 +34,72 @@ const TabsLayout = () => {
           headerShown: false,
           title: "Buscar",
           tabBarIcon: ({ focused }) => (
-            <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
+            <Octicons
+              name="search"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="plan/[uid]"
         options={{
-            headerShown: false,
-            tabBarStyle:{
-                display:"none",
-            },
-            href:null
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="solicitudes/[planId]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
       <Tabs.Screen
         name="comments/[uid]"
         options={{
-            headerShown: false,
-            tabBarStyle:{
-                display:"none",
-            },
-            href:null
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
       <Tabs.Screen
         name="notificaciones/[uid]"
         options={{
-            headerShown: false,
-            tabBarStyle:{
-                display:"none",
-            },
-            href:null
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
       <Tabs.Screen
-        name="newPlan"
+        name="(createPlan)/step1"
         options={{
           title: "Subir",
           headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <Octicons name="diff-added" size={24} color={focused ? "orange" : "gray"}  />
+            <Octicons
+              name="diff-added"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
+          tabBarStyle: {
+            display: "none",
+          },
         }}
       />
+
       <Tabs.Screen
         name="user/[id]"
         options={{
@@ -88,11 +110,44 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="profile"
         options={{
-          headerTitle: "Perfil",
-          title: "Perfil",
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <Octicons name="person" size={24} color={focused ? "orange" : "gray"}  />
+            <Octicons
+              name="person"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step2"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step3"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step4"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
     </Tabs>
