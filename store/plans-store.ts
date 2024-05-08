@@ -8,6 +8,7 @@ export interface PlansStore extends Plan {
   add: (plan: Plan) => void;
   remove: (planUid: string) => void;
   getByUid: (planUid: string) => Plan | undefined;
+  solicitud: any; // Add the missing property "solicitud"
 }
 
 export const usePlansStore = create<PlansStore>()((set, get) => ({
@@ -25,7 +26,7 @@ export const usePlansStore = create<PlansStore>()((set, get) => ({
   requests: [],
   score: 0,
   uid: "",
-
+  solicitud: [], // Initialize the "solicitud" property
   plans: [],
   update: (plans) => set({ plans }),
   add: (plan) => set((state) => ({ plans: [...state.plans, plan] })),

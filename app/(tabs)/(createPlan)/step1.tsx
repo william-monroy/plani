@@ -22,10 +22,10 @@ const step1 = () => {
     updateNewPlan({ name, description });
     const nameStore = useNewPlanStore.getState().name;
     const descriptionStore = useNewPlanStore.getState().description;
-    console.log("newPlan store: ", {
-      nameStore,
-      descriptionStore,
-    });
+    // console.log("newPlan store: ", {
+    //   nameStore,
+    //   descriptionStore,
+    // });
   };
 
   return (

@@ -21,10 +21,10 @@ import {
 import { User } from "@/types/User.type";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { Plan } from "@/types/Plan.type";
-import { PlanCard } from "@/components/PlanCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Rating from "@/components/UserRating";
 import { PlanRowCard } from "@/components/PlanRowCard";
+import LoadingView from "@/layout/LoadingView";
 
 const UserPage = () => {
   const { id } = useLocalSearchParams();
@@ -37,9 +37,11 @@ const UserPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingUserData, setIsLoadingUserData] = useState(true);
   const [isEnabledMyPlans, setIsEnabledMyPlans] = useState(true);
-  const toggleSwitchMyPlans = () => setIsEnabledMyPlans((previousState) => !previousState);
+  const toggleSwitchMyPlans = () =>
+    setIsEnabledMyPlans((previousState) => !previousState);
   const [isEnabledJoined, setIsEnabledJoined] = useState(true);
-  const toggleSwitchJoined = () => setIsEnabledJoined((previousState) => !previousState);
+  const toggleSwitchJoined = () =>
+    setIsEnabledJoined((previousState) => !previousState);
 
   const [routes] = useState([
     { key: "myPlans", title: "Sus Planes" },
@@ -63,40 +65,52 @@ const UserPage = () => {
         ) : (
           <View style={styles.plans_index}>
             <ScrollView
-          style={styles.plans_index}
-          refreshControl={
-            <RefreshControl
-            refreshing={refreshData}
-            onRefresh={handleRefresh} />
-          }
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Text style={{marginTop: 12}}>Mostrar planes pasados</Text>
-            <Switch
-              trackColor={{ false: '#767577', true: '#85C1E9' }}
-              thumbColor={isEnabledMyPlans ? 'orange' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitchMyPlans}
-              value={isEnabledMyPlans}
-            />
-          </View>
-          {isEnabledMyPlans ? (
-            planes
-            .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-            .map((plan: Plan, key: number) => (
-              // <PlanCard key={key} {...plan} />
-              <PlanRowCard key={key} {...plan} />
-            ))
-          ) : (
-            planes
-              .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-              .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-              .map((plan: Plan, key: number) => (
-                // <PlanCard key={key} {...plan} />
-                <PlanRowCard key={key} {...plan} />
-              ))
-          )}
-        </ScrollView>
+              style={styles.plans_index}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshData}
+                  onRefresh={handleRefresh}
+                />
+              }
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 15,
+                }}
+              >
+                <Text>Mostrar planes pasados</Text>
+                <Switch
+                  trackColor={{ false: "#767577", true: "#85C1E9" }}
+                  thumbColor={isEnabledMyPlans ? "orange" : "#f4f3f4"}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={toggleSwitchMyPlans}
+                  value={isEnabledMyPlans}
+                />
+              </View>
+              {isEnabledMyPlans
+                ? planes
+                    .filter(
+                      (plan: Plan) => plan.idAdmin == (user.uid as string)
+                    )
+                    .map((plan: Plan, key: number) => (
+                      // <PlanCard key={key} {...plan} />
+                      <PlanRowCard key={key} {...plan} />
+                    ))
+                : planes
+                    .filter(
+                      (plan: Plan) => plan.idAdmin == (user.uid as string)
+                    )
+                    // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
+                    .filter((plan: Plan) => (plan.dateEnd as Date) > new Date())
+                    .map((plan: Plan, key: number) => (
+                      // <PlanCard key={key} {...plan} />
+                      <PlanRowCard key={key} {...plan} />
+                    ))}
+            </ScrollView>
           </View>
         )}
       </View>
@@ -110,40 +124,51 @@ const UserPage = () => {
           <Text>Cargando planes...</Text>
         ) : (
           <ScrollView
-          style={styles.plans_index}
-          refreshControl={
-            <RefreshControl
-            refreshing={refreshData}
-            onRefresh={handleRefresh} />
-          }
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Text style={{marginTop: 12}}>Mostrar planes pasados</Text>
-            <Switch
-              trackColor={{ false: '#767577', true: '#85C1E9' }}
-              thumbColor={isEnabledJoined ? 'orange' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitchJoined}
-              value={isEnabledJoined}
-            />
-          </View>
-          {isEnabledJoined ? (
-            planes
-            .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-            .map((plan: Plan, key: number) => (
-              // <PlanCard key={key} {...plan} />
-              <PlanRowCard key={key} {...plan} />
-            ))
-          ) : (
-            planes
-              .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-              .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-              .map((plan: Plan, key: number) => (
-                // <PlanCard key={key} {...plan} />
-                <PlanRowCard key={key} {...plan} />
-              ))
-          )}
-        </ScrollView>
+            style={styles.plans_index}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshData}
+                onRefresh={handleRefresh}
+              />
+            }
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 15,
+              }}
+            >
+              <Text>Mostrar planes pasados</Text>
+              <Switch
+                trackColor={{ false: "#767577", true: "#85C1E9" }}
+                thumbColor={isEnabledJoined ? "orange" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitchJoined}
+                value={isEnabledJoined}
+              />
+            </View>
+            {isEnabledJoined
+              ? planes
+                  .filter((plan: Plan) =>
+                    plan.guests.includes(user.uid as string)
+                  )
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))
+              : planes
+                  .filter((plan: Plan) =>
+                    plan.guests.includes(user.uid as string)
+                  )
+                  .filter((plan: Plan) => (plan.dateEnd as Date) > new Date())
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))}
+          </ScrollView>
         )}
       </View>
     </View>
@@ -193,13 +218,14 @@ const UserPage = () => {
   return (
     <View style={[{ paddingTop: insets.top }, styles.container]}>
       {isLoadingUserData ? (
-        <Text>Cargando datos del usuario...</Text>
+        // <Text>Cargando datos del usuario...</Text>
+        <LoadingView text="" />
       ) : (
         <View style={styles.userInfo}>
           <Image source={{ uri: image as string }} style={styles.userPhoto} />
           <View style={{ gap: 10, alignItems: "center" }}>
             <Text style={styles.userName}>
-              {user.firstName} {user.lastName}
+              {user.firstName.split(" ")[0]} {user.lastName.split(" ")[0]}
             </Text>
             <Rating size={20} value={user.score as number} />
           </View>

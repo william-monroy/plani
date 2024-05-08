@@ -39,6 +39,7 @@ export const useNewPlanStore = create<newPlanStore & StepStatus>()(
       score: 0,
       uid: "",
       update: (plan) => set((state) => ({ ...state, ...plan })),
+      solicitud: [],
 
       steps: 4,
       current: 1,

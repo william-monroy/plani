@@ -28,6 +28,7 @@ import { Plan } from "@/types/Plan.type";
 import Rating from "@/components/UserRating";
 import { PlanRowCard } from "@/components/PlanRowCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { parseDate } from "@/utils/Timestamp";
 
 export const ProfilePage = () => {
   const { avatar } = useUserStore.getState();
@@ -42,9 +43,11 @@ export const ProfilePage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isLoadingUserData, setIsLoadingUserData] = useState(true);
   const [isEnabledMyPlans, setIsEnabledMyPlans] = useState(true);
-  const toggleSwitchMyPlans = () => setIsEnabledMyPlans((previousState) => !previousState);
+  const toggleSwitchMyPlans = () =>
+    setIsEnabledMyPlans((previousState) => !previousState);
   const [isEnabledJoined, setIsEnabledJoined] = useState(true);
-  const toggleSwitchJoined = () => setIsEnabledJoined((previousState) => !previousState);
+  const toggleSwitchJoined = () =>
+    setIsEnabledJoined((previousState) => !previousState);
 
   //desde aqui
   const [routes] = useState([
@@ -58,90 +61,111 @@ export const ProfilePage = () => {
 
   const MyPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
-    <View style={styles.container2_index}>
-      {isLoading ? (
-        <Text>Loading plans...</Text>
-      ) : (
-        <ScrollView
-          style={styles.plans_index}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Text style={{marginTop: 12}}>Mostrar planes pasados</Text>
-            <Switch
-              trackColor={{ false: '#767577', true: '#85C1E9' }}
-              thumbColor={isEnabledMyPlans ? 'orange' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitchMyPlans}
-              value={isEnabledMyPlans}
-            />
-          </View>
-          {isEnabledMyPlans ? (
-            planes
-            .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-            .map((plan: Plan, key: number) => (
-              // <PlanCard key={key} {...plan} />
-              <PlanRowCard key={key} {...plan} />
-            ))
-          ) : (
-            planes
-              .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-              .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-              .map((plan: Plan, key: number) => (
-                // <PlanCard key={key} {...plan} />
-                <PlanRowCard key={key} {...plan} />
-              ))
-          )}
-        </ScrollView>
-      )}
+      <View style={styles.container2_index}>
+        {isLoading ? (
+          <Text>Loading plans...</Text>
+        ) : (
+          <ScrollView
+            style={styles.plans_index}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 15,
+              }}
+            >
+              <Text>Mostrar planes pasados</Text>
+              <Switch
+                trackColor={{ false: "#767577", true: "#85C1E9" }}
+                thumbColor={isEnabledMyPlans ? "orange" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitchMyPlans}
+                value={isEnabledMyPlans}
+              />
+            </View>
+            {planes.length > 0 && isEnabledMyPlans
+              ? planes
+                  .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))
+              : planes
+                  .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+                  // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
+                  .filter(
+                    (plan: Plan) =>
+                      (parseDate(plan.dateEnd) as Date) > new Date()
+                  )
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))}
+          </ScrollView>
+        )}
+      </View>
     </View>
-  </View>
   );
 
   const JoinedPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
-    <View style={styles.container2_index}>
-      {isLoading ? (
-        <Text>Loading plans...</Text>
-      ) : (
-        <ScrollView
-          style={styles.plans_index}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Text style={{marginTop: 12}}>Mostrar planes pasados</Text>
-            <Switch
-              trackColor={{ false: '#767577', true: '#85C1E9' }}
-              thumbColor={isEnabledJoined ? 'orange' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitchJoined}
-              value={isEnabledJoined}
-            />
-          </View>
-          {isEnabledJoined ? (
-            planes
-            .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-            .map((plan: Plan, key: number) => (
-              // <PlanCard key={key} {...plan} />
-              <PlanRowCard key={key} {...plan} />
-            ))
-          ) : (
-            planes
-              .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-              .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-              .map((plan: Plan, key: number) => (
-                // <PlanCard key={key} {...plan} />
-                <PlanRowCard key={key} {...plan} />
-              ))
-          )}
-        </ScrollView>
-      )}
+      <View style={styles.container2_index}>
+        {isLoading ? (
+          <Text>Loading plans...</Text>
+        ) : (
+          <ScrollView
+            style={styles.plans_index}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 15,
+              }}
+            >
+              <Text>Mostrar planes pasados</Text>
+              <Switch
+                trackColor={{ false: "#767577", true: "#85C1E9" }}
+                thumbColor={isEnabledJoined ? "orange" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitchJoined}
+                value={isEnabledJoined}
+              />
+            </View>
+            {planes.length > 0 && isEnabledJoined
+              ? planes
+                  .filter((plan: Plan) =>
+                    plan.guests.includes(user.uid as string)
+                  )
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))
+              : planes
+                  .filter((plan: Plan) =>
+                    plan.guests.includes(user.uid as string)
+                  )
+                  // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
+                  .filter((plan: Plan) => (plan.dateEnd as Date) > new Date())
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))}
+          </ScrollView>
+        )}
+      </View>
     </View>
-  </View>
   );
 
   const onRefresh = () => {
@@ -159,7 +183,7 @@ export const ProfilePage = () => {
           return planData as Plan;
         })
       );
-      console.log("Planes updated", JSON.stringify(planes, null, 2));
+      // console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
       setRefreshing(false);
     });
@@ -179,7 +203,7 @@ export const ProfilePage = () => {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        console.log("Permission denied");
+        console.log("🔴 ERROR: Permission denied");
         return;
       }
 
@@ -191,14 +215,13 @@ export const ProfilePage = () => {
       });
 
       if (!result.canceled) {
-        console.log("slkdfhksadjlkflkasdf");
-        console.log(result.assets[0].uri);
+        // console.log(result.assets[0].uri);
         //setImage(result.assets[0].uri);
         await updateUser(result.assets[0].uri);
         setIsLoadingUserData(true);
       }
     } catch (error) {
-      console.error("Error picking image: ", error);
+      console.log("🔴 ERROR: Error picking image", error);
     }
     setRefreshing(false);
   };
@@ -207,8 +230,7 @@ export const ProfilePage = () => {
     const userId = user.uid;
     try {
       const uri = img;
-      console.log("slkdfhksadjlkflkasdfsdfdsf");
-      console.log("URI: ", uri);
+      // console.log("URI: ", uri);
       const blob = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.onload = function () {
@@ -242,11 +264,10 @@ export const ProfilePage = () => {
           }
         },
         (error) => {
-          console.error("Error uploading image: ", error);
+          console.log("🔴 ERROR: Error uploading image", error);
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            console.log("///////////////////////////////////////////");
             console.log("File available at", downloadURL);
             setImageUrl(downloadURL);
             const docRef = doc(db, "Usuarios", userId as string);
@@ -256,7 +277,7 @@ export const ProfilePage = () => {
         }
       );
     } catch (error) {
-      console.error("Error uploading image: ", error);
+      console.log("🔴 ERROR: Error uploading image", error);
     }
   };
 
@@ -268,7 +289,7 @@ export const ProfilePage = () => {
       const docRef = doc(db, "Usuarios", userId as string);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        console.log("User data:", docSnap.data());
+        // console.log("User data:", docSnap.data());
         userData = docSnap.data() as User;
       }
       setUser(userData);
@@ -277,7 +298,7 @@ export const ProfilePage = () => {
       setRefreshing(false);
       console.log(user);
     } catch (error) {
-      console.error("Error getting documents: ", error);
+      console.log("🔴 ERROR: Error getting documents:", error);
     }
   };
 
