@@ -73,14 +73,8 @@ const step2 = () => {
 
   const handleNext = () => {
     updateNewPlan({
-      dateStart: {
-        seconds: dateStart.getTime() / 1000,
-        nanoseconds: 0,
-      },
-      dateEnd: {
-        seconds: dateEnd.getTime() / 1000,
-        nanoseconds: 0,
-      },
+      dateStart: dateStart,
+      dateEnd: dateEnd,
       labels: labels.filter((label) => label.value === true).map((l) => l.name),
     });
     const dateStartStore = useNewPlanStore.getState().dateStart;

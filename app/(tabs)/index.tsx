@@ -23,13 +23,15 @@ import * as Location from "expo-location";
 
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { parseDate } from "../../utils/Timestamp";
+import LoadingView from "@/layout/LoadingView";
 
 const HomePage = () => {
   const insets = useSafeAreaInsets();
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [view, setView] = useState<"list" | "map">("map");
+  const [view, setView] = useState<"list" | "map">("list");
 
   const { firstName, gender } = useUserStore((state) => state);
   const uid = useUserStore.getState().uid;
@@ -44,9 +46,10 @@ const HomePage = () => {
             const planData = { ...item.data(), id: item.id } as unknown;
             return planData as Plan;
           })
-          .filter((item) => new Date((item.dateEnd?.seconds as number) * 1000) > new Date())
+          // .filter((item) => new Date((item.dateEnd?.seconds as number) * 1000) > new Date())
+          .filter((item) => (parseDate(item.dateEnd) as Date) <= new Date())
       );
-      console.log("Planes updated", JSON.stringify(planes, null, 2));
+      // console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
       setRefreshing(false);
     });
@@ -58,7 +61,7 @@ const HomePage = () => {
 
   useEffect(() => {
     getData();
-    console.log("re-render");
+    // console.log("re-render");
   }, []);
 
   const [userLocation, setUserLocation] = useState<any>(null);
@@ -81,18 +84,18 @@ const HomePage = () => {
       }
 
       const location = await Location.getCurrentPositionAsync();
-      console.log(location);
+      // console.log(location);
       setUserLocation(location);
       setLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: location.coords?.latitude ?? 42.8006,
+        longitude: location.coords?.longitude ?? -1.6365,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       });
       mapRef.current.animateToRegion(
         {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
+          latitude: location.coords?.latitude ?? 42.8006,
+          longitude: location.coords?.longitude ?? -1.6365,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         },
@@ -143,7 +146,7 @@ const HomePage = () => {
           </View>
         </View>
         {isLoading ? (
-          <Text>Loading plans...</Text>
+          <LoadingView text="Cargando Planes..." />
         ) : view === "list" ? (
           <ScrollView
             style={styles.plans}

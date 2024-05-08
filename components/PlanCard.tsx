@@ -1,22 +1,13 @@
 import { Plan } from "@/types/Plan.type";
+import { timestampToDate } from "@/utils/Timestamp";
 import { activities } from "@/utils/constants";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { Timestamp } from "firebase/firestore";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export const PlanCard = (props: Plan) => {
-  const {
-    uid,
-    name,
-    picture,
-    dateEnd,
-    dateStart,
-    description,
-    guests,
-    labels,
-    score,
-  } = props;
+  const { uid, name, picture, dateEnd, dateStart, description, labels } = props;
 
   // useEffect(() => {
   //   console.log("PlanCard props:", props);
@@ -33,9 +24,15 @@ export const PlanCard = (props: Plan) => {
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
         <Text style={styles.userCardDate}>
-          {new Date((dateStart?.seconds as number) * 1000).toLocaleDateString()}
+          {/* {new Date((dateStart?.seconds as number) * 1000).toLocaleDateString()} */}
+          {typeof dateStart !== undefined
+            ? timestampToDate(dateStart as Timestamp)?.toLocaleDateString()
+            : ""}
           {" - "}
-          {new Date((dateEnd?.seconds as number) * 1000).toLocaleDateString()}
+          {/* {new Date((dateEnd?.seconds as number) * 1000).toLocaleDateString()} */}
+          {typeof dateEnd !== undefined
+            ? timestampToDate(dateEnd as Timestamp)?.toLocaleDateString()
+            : ""}
         </Text>
         <Text style={styles.userCardDescription}>{description}</Text>
         {labels && (

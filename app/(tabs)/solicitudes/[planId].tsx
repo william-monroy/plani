@@ -46,7 +46,7 @@ const SolicitudesScreen = () => {
             );
             await getDocs(collectionRef).then(async (data) => {
               const getData = await data.docs.map(async (user: any) => {
-                console.log("user:", await user.data());
+                // console.log("user:", await user.data());
                 return {
                   idUsuario: user.data().uid,
                   avatar: user.data().avatar,

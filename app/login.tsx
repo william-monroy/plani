@@ -28,7 +28,7 @@ const LoginScreen = () => {
               where("uid", "==", uid)
             );
             await getDocs(q).then((response) => {
-              console.log("🟠 RESPONSE", response.docs);
+              // console.log("🟠 RESPONSE", response.docs);
               if (response.docs.length === 0) {
                 alert("Usuario no encontrado");
                 throw new Error("Usuario no encontrado");
