@@ -3,6 +3,8 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { timestampToDate } from "@/utils/Timestamp";
+import { Timestamp } from "firebase/firestore";
 
 export const PlanRowCard = (props: Plan) => {
   const { uid, name, picture, dateEnd, dateStart, guests } = props;
@@ -18,9 +20,15 @@ export const PlanRowCard = (props: Plan) => {
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
         <Text style={styles.userCardDate}>
-          {new Date((dateStart?.seconds as number) * 1000).toLocaleDateString()}
+          {/* {new Date((dateStart?.seconds as number) * 1000).toLocaleDateString()} */}
+          {typeof dateStart !== undefined
+            ? timestampToDate(dateStart as Timestamp)?.toLocaleDateString()
+            : ""}
           {" - "}
-          {new Date((dateEnd?.seconds as number) * 1000).toLocaleDateString()}
+          {/* {new Date((dateEnd?.seconds as number) * 1000).toLocaleDateString()} */}
+          {typeof dateEnd !== undefined
+            ? timestampToDate(dateEnd as Timestamp)?.toLocaleDateString()
+            : ""}
         </Text>
         <View style={styles.row}>
           <Ionicons name="people" size={20} color="black" />

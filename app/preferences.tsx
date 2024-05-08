@@ -76,11 +76,11 @@ const PreferencesScreen = () => {
         await updateDoc(userDoc, {
           labels: selectedPreferences,
         });
-        console.log("Document updated for user with ID: ", userId);
+        // console.log("Document updated for user with ID: ", userId);
         router.replace("/(tabs)");
       });
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.log("🔴 ERROR: Error adding document", e);
     }
   };
 

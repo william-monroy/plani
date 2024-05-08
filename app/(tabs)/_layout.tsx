@@ -10,9 +10,9 @@ const TabsLayout = () => {
   // const update = useUserStore((state) => state.update);
 
   const checkUser = async () => {
-    console.log("🔴authState");
+    // console.log("🔴authState");
     getAuth().onAuthStateChanged(async (user) => {
-      console.log("user:", user);
+      // console.log("user:", user);
       setIsLoading(false);
       if (!user) {
         router.replace("/landing");
@@ -40,6 +40,18 @@ const TabsLayout = () => {
               color={focused ? "orange" : "gray"}
             />
           ),
+          tabBarLabel(props) {
+            return (
+              <Text
+                style={{
+                  color: props.focused ? "orange" : "gray",
+                  fontSize: 10,
+                }}
+              >
+                Buscar
+              </Text>
+            );
+          },
         }}
       />
       <Tabs.Screen
@@ -99,7 +111,6 @@ const TabsLayout = () => {
           },
         }}
       />
-
       <Tabs.Screen
         name="user/[id]"
         options={{
@@ -118,6 +129,18 @@ const TabsLayout = () => {
               color={focused ? "orange" : "gray"}
             />
           ),
+          tabBarLabel(props) {
+            return (
+              <Text
+                style={{
+                  color: props.focused ? "orange" : "gray",
+                  fontSize: 10,
+                }}
+              >
+                Buscar
+              </Text>
+            );
+          },
         }}
       />
       <Tabs.Screen

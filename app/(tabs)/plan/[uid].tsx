@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "@/app/_infrastructure/firebase";
 import { Plan } from "@/types/Plan.type";
@@ -32,6 +33,7 @@ import { User } from "@/types/User.type";
 import { useUserStore } from "@/store/user-store";
 import { activities } from "@/utils/constants";
 import { Solicitud } from "@/types/Solicitud";
+import { parseDate, timestampToDate } from "@/utils/Timestamp";
 
 export default function PlanScreen() {
   const insets = useSafeAreaInsets();
@@ -147,10 +149,11 @@ export default function PlanScreen() {
     try {
       const q = query(collection(db, "Planes"), where("uid", "==", uid));
       const querySnapshot = await getDocs(q);
+      // console.log("🟠DEBUG", planData);
       const plans = querySnapshot.docs.map((doc) => doc.data() as Plan);
       if (plans.length > 0) {
         const planData = plans[0];
-        console.log(planData);
+        // console.log("🟠planData", planData);
         setPlanData(planData);
 
         const guestsData: User[] = [];
@@ -181,14 +184,14 @@ export default function PlanScreen() {
         const docRef = doc(db, "Usuarios", planData.idAdmin);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          console.log("Admin data:", docSnap.data());
+          // console.log("Admin data:", docSnap.data());
           adminData = docSnap.data() as User;
         }
         setAdmin(adminData);
         console.log(admin);
         const idAdmins = querySnapshot.docs.map((doc) => doc.data().idAdmin);
-        console.log(planData.idAdmin);
-        console.log(admin.uid);
+        // console.log(planData.idAdmin);
+        // console.log(admin.uid);
         if (admin.uid == planData.idAdmin) {
           console.log(admin.uid);
         }
@@ -276,19 +279,19 @@ export default function PlanScreen() {
         <View style={styles.spacer} />
         <View style={styles.contentCard}>
           <Text style={styles.titleCard}>{planData.name}</Text>
-          {new Date((planData.dateEnd?.seconds as number) * 1000) <
-          new Date() ? (
-            <Rating size={24} value={planData.score as number} />
-          ) : null}
+          {planData?.dateEnd &&
+            (parseDate(planData.dateEnd) as Date) < new Date() && (
+              <Rating size={24} value={planData.score as number} />
+            )}
           <Text style={styles.subTitleCard}>Detalles</Text>
           <Text style={styles.cardDate}>
-            {new Date(
-              (planData.dateStart?.seconds as number) * 1000
-            ).toLocaleDateString()}
+            {planData?.dateStart
+              ? parseDate(planData.dateStart)?.toLocaleDateString()
+              : ""}
             {" - "}
-            {new Date(
-              (planData.dateEnd?.seconds as number) * 1000
-            ).toLocaleDateString()}
+            {planData?.dateEnd
+              ? parseDate(planData.dateEnd)?.toLocaleDateString()
+              : ""}
           </Text>
           <Text style={styles.cardDescription}>{planData.description}</Text>
           {planData.labels && (
@@ -334,8 +337,8 @@ export default function PlanScreen() {
             })}
           </ScrollView>
           <View style={styles.container2}>
-            {new Date((planData.dateEnd?.seconds as number) * 1000) <
-            new Date() ? (
+            {/* {new Date((planData.dateEnd?.seconds as number) * 1000) < */}
+            {(planData.dateEnd as Date) < new Date() ? (
               <Pressable
                 style={styles.button}
                 onPress={() => router.push(`/comments/${uid}`)}
