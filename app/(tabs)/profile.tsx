@@ -19,6 +19,8 @@ import {
   ScrollView,
   RefreshControl,
   Switch,
+  Image,
+  TouchableOpacity,
 } from "react-native";
 import { useUserStore } from "@/store/user-store";
 import { User } from "@/types/User.type";
@@ -29,6 +31,7 @@ import Rating from "@/components/UserRating";
 import { PlanRowCard } from "@/components/PlanRowCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { parseDate } from "@/utils/Timestamp";
+import { Ionicons } from "@expo/vector-icons";
 
 export const ProfilePage = () => {
   const { avatar } = useUserStore.getState();
@@ -198,7 +201,7 @@ export const ProfilePage = () => {
   const { uid } = useLocalSearchParams();
 
   const pickImage = async () => {
-    setRefreshing(true);
+    //setRefreshing(true);
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -216,9 +219,9 @@ export const ProfilePage = () => {
 
       if (!result.canceled) {
         // console.log(result.assets[0].uri);
-        //setImage(result.assets[0].uri);
-        await updateUser(result.assets[0].uri);
-        setIsLoadingUserData(true);
+        setImage(result.assets[0].uri);
+        updateUser();
+        //setIsLoadingUserData(true);
       }
     } catch (error) {
       console.log("🔴 ERROR: Error picking image", error);
@@ -226,11 +229,12 @@ export const ProfilePage = () => {
     setRefreshing(false);
   };
 
-  const updateUser = async (img: string) => {
-    const userId = user.uid;
+  const updateUser = async () => {
+    setIsLoadingUserData(true);
+    const { uid } = useUserStore.getState();
+    const userId = uid;
     try {
-      const uri = img;
-      // console.log("URI: ", uri);
+      const uri = image as string;
       const blob = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.onload = function () {
@@ -244,7 +248,6 @@ export const ProfilePage = () => {
         xhr.send(null);
       });
       const filename = uri.substring(uri.lastIndexOf("/") + 1);
-      //const storageRef = ref(storage, `planes/${userId}/${filename}`);
       const storageRef = ref(storage, `users/${userId}/${filename}`);
       const uploadTask = uploadBytesResumable(storageRef, blob as Blob);
 
@@ -264,20 +267,25 @@ export const ProfilePage = () => {
           }
         },
         (error) => {
-          console.log("🔴 ERROR: Error uploading image", error);
+          console.log("ERROR: Error uploading image", error);
+          alert("Ha ocurrido un error al subir la imagen😔");
+          setIsLoadingUserData(false);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            console.log("File available at", downloadURL);
-            setImageUrl(downloadURL);
-            const docRef = doc(db, "Usuarios", userId as string);
-            updateDoc(docRef, { avatar: imageUrl });
-            getUserData();
-          });
-        }
-      );
+          getDownloadURL(uploadTask.snapshot.ref).then(
+            async (downloadURL) => {
+              console.log("File available at", downloadURL);
+              setImageUrl(downloadURL);
+              const userRef = doc(db, `Usuarios/${userId}`);
+              await updateDoc(userRef, {avatar: downloadURL as string });
+            });
+          }
+        );
+        setIsLoadingUserData(false);
     } catch (error) {
       console.log("🔴 ERROR: Error uploading image", error);
+      alert("Ha ocurrido un error al subir la imagen😔");
+      setIsLoadingUserData(false);
     }
   };
 
@@ -315,11 +323,19 @@ export const ProfilePage = () => {
         <Text>Loading user data...</Text>
       ) : (
         <View>
-          <View style={{ gap: 10, alignItems: "center" }}>
-            <Text style={styles.userName}>
-              {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
-            </Text>
-            <Rating size={20} value={user.score as number} />
+          <View style={styles.userInfo}>
+            <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+              <Image source={{uri: image as string}} style={styles.userPhoto}/>
+              <View style={styles.iconContainer}>
+                <Ionicons name="create-outline" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+            <View style={{ gap: 10, alignItems: "center" }}>
+              <Text style={styles.userName}>
+                {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
+              </Text>
+              <Rating size={20} value={user.score as number} />
+            </View>
           </View>
 
           <View style={styles.container2}>
@@ -380,8 +396,16 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flexDirection: "row",
+    gap: 20,
     alignItems: "center",
     //marginBottom: 10
+  },
+  imageContainer: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    overflow: 'hidden',
   },
   userPhoto: {
     width: 100,
@@ -435,6 +459,17 @@ const styles = StyleSheet.create({
   subTitle_index: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: '20%',
+    left: '20%',
+    transform: [{ translateX: -20 }, { translateY: -20 }], // Ajusta la posición del ícono
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo del ícono
+    padding: 38, // Relleno del ícono
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
 });
 

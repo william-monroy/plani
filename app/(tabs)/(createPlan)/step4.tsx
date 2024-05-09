@@ -149,7 +149,7 @@ const step4 = () => {
                       labels: labels,
                       name: name,
                       picture: downloadURL,
-                      requests: [],
+                      solicitud: [],
                       score: 0,
                     })
                       .then((planRef) => {

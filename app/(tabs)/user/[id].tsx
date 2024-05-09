@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   label2: {
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 10,
+    // marginTop: 10,
   },
   info: {
     fontSize: 16,
