@@ -47,7 +47,7 @@ const HomePage = () => {
             return planData as Plan;
           })
           // .filter((item) => new Date((item.dateEnd?.seconds as number) * 1000) > new Date())
-          .filter((item) => (parseDate(item.dateEnd) as Date) <= new Date())
+          .filter((item) => (parseDate(item.dateEnd) as Date) >= new Date())
       );
       // console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
@@ -170,7 +170,7 @@ const HomePage = () => {
             >
               {planes.map(
                 (plan: Plan, key: number) =>
-                  plan.coordinates.latitude && (
+                  (
                     <Marker
                       key={key}
                       coordinate={{

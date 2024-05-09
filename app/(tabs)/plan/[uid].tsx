@@ -83,7 +83,7 @@ export default function PlanScreen() {
       mensaje:
         "El usuario " +
         userName +
-        ' se ha unido al plan "' +
+        ' ha solicitado unirse al plan "' +
         planData.name +
         '"',
       fecha: new Date(),
@@ -188,7 +188,6 @@ export default function PlanScreen() {
           adminData = docSnap.data() as User;
         }
         setAdmin(adminData);
-        console.log(admin);
         const idAdmins = querySnapshot.docs.map((doc) => doc.data().idAdmin);
         // console.log(planData.idAdmin);
         // console.log(admin.uid);
@@ -207,6 +206,7 @@ export default function PlanScreen() {
   };
 
   const getUsersData = async () => {
+    setRefreshing(true);
     try {
       const q = query(
         collection(db, "Usuarios"),
@@ -222,7 +222,7 @@ export default function PlanScreen() {
         planId: planData.uid,
       }));
       setSolicitudes(userData);
-      setIsLoading(false);
+      setRefreshing(false);
     } catch (error) {
       console.error("Error getting users data: ", error);
     }
@@ -338,7 +338,7 @@ export default function PlanScreen() {
           </ScrollView>
           <View style={styles.container2}>
             {/* {new Date((planData.dateEnd?.seconds as number) * 1000) < */}
-            {(planData.dateEnd as Date) < new Date() ? (
+            {(planData.dateEnd as Date) > new Date() ? (
               <Pressable
                 style={styles.button}
                 onPress={() => router.push(`/comments/${uid}`)}
@@ -351,10 +351,9 @@ export default function PlanScreen() {
                planSol === true ?(
 
                 <Pressable style={styles.button} onPress={borrarAsistente}>
-                <Text style={styles.textButton}>Solicitado</Text>
+                  <Text style={styles.textButton}>Solicitado</Text>
                 </Pressable>
               ) :(
-
                 <Pressable style={styles.button} onPress={nuevoAsistente}>
                   <Text style={styles.textButton}>Apuntarme</Text>
                 </Pressable>
