@@ -149,6 +149,7 @@ const HomePage = () => {
           <LoadingView text="Cargando Planes..." />
         ) : view === "list" ? (
           <ScrollView
+            showsVerticalScrollIndicator={false}
             style={styles.plans}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

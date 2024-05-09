@@ -40,7 +40,7 @@ export default function PlanScreen() {
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
   const [guests, setGuests] = useState<User[]>([] as User[]);
-  const [solicitudes,setSolicitud] = useState<User[]>([] as User[]);
+  const [solicitudes, setSolicitud] = useState<User[]>([] as User[]);
   const [admin, setAdmin] = useState<User>({} as User);
   const [planAdded, setPlanAdded] = useState<boolean>(false);
   const [planSol, setPlanSol] = useState<boolean>(false);
@@ -115,7 +115,7 @@ export default function PlanScreen() {
       // Actualiza el campo 'guests' borrando el 'userId' a la lista
       await updateDoc(planRef, {
         guests: arrayRemove(userId),
-        solicitud: arrayRemove(userId)
+        solicitud: arrayRemove(userId),
       });
       console.log("Asistente borrado con éxito");
       setPlanAdded(false);
@@ -177,8 +177,6 @@ export default function PlanScreen() {
           }
         }
         setSolicitud(guestsSol);
-
-
 
         let adminData: User = {} as User;
         const docRef = doc(db, "Usuarios", planData.idAdmin);
@@ -347,18 +345,16 @@ export default function PlanScreen() {
               </Pressable>
             ) : planData.idAdmin != useUserStore.getState().uid ? (
               planAdded === false ? (
-
-               planSol === true ?(
-
-                <Pressable style={styles.button} onPress={borrarAsistente}>
-                <Text style={styles.textButton}>Solicitado</Text>
-                </Pressable>
-              ) :(
-
-                <Pressable style={styles.button} onPress={nuevoAsistente}>
-                  <Text style={styles.textButton}>Apuntarme</Text>
-                </Pressable>
-              )) : (
+                planSol === true ? (
+                  <Pressable style={styles.button} onPress={borrarAsistente}>
+                    <Text style={styles.textButton}>Solicitado</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable style={styles.button} onPress={nuevoAsistente}>
+                    <Text style={styles.textButton}>Apuntarme</Text>
+                  </Pressable>
+                )
+              ) : (
                 <Pressable style={styles.button} onPress={borrarAsistente}>
                   <Text style={styles.textButton}>Salir del plan</Text>
                 </Pressable>

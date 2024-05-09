@@ -465,7 +465,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
     borderRadius: 10,
     opacity: 0.7,
     justifyContent: "center",
