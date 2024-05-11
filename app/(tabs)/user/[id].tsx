@@ -105,7 +105,7 @@ const UserPage = () => {
                       (plan: Plan) => plan.idAdmin == (user.uid as string)
                     )
                     // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-                    .filter((plan: Plan) => (plan.dateEnd as Date) > new Date())
+                    .filter((plan: Plan) => (plan.dateEnd as Date) < new Date())
                     .map((plan: Plan, key: number) => (
                       // <PlanCard key={key} {...plan} />
                       <PlanRowCard key={key} {...plan} />
@@ -163,7 +163,7 @@ const UserPage = () => {
                   .filter((plan: Plan) =>
                     plan.guests.includes(user.uid as string)
                   )
-                  .filter((plan: Plan) => (plan.dateEnd as Date) > new Date())
+                  .filter((plan: Plan) => (plan.dateEnd as Date) < new Date())
                   .map((plan: Plan, key: number) => (
                     // <PlanCard key={key} {...plan} />
                     <PlanRowCard key={key} {...plan} />
