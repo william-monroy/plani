@@ -158,7 +158,7 @@ export default function PlanScreen() {
 
         const guestsData: User[] = [];
         for (const guestId of planData.guests) {
-          if (guestId === userId) setPlanAdded(true);
+          (guestId === userId) ? setPlanAdded(true) : setPlanAdded(false);
           const docRef = doc(db, "Usuarios", guestId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
@@ -169,7 +169,8 @@ export default function PlanScreen() {
 
         const guestsSol: User[] = [];
         for (const guestId of planData.solicitud) {
-          if (guestId === userId) setPlanSol(true);
+          // if (guestId === userId) setPlanSol(true);
+          (guestId === userId) ? setPlanSol(true) : setPlanSol(false);
           const docRef = doc(db, "Usuarios", guestId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
@@ -336,7 +337,8 @@ export default function PlanScreen() {
           </ScrollView>
           <View style={styles.container2}>
             {/* {new Date((planData.dateEnd?.seconds as number) * 1000) < */}
-            {(planData.dateEnd as Date) > new Date() ? (
+            {planData?.dateEnd &&
+              (parseDate(planData.dateEnd) as Date) < new Date() ? (
               <Pressable
                 style={styles.button}
                 onPress={() => router.push(`/comments/${uid}`)}

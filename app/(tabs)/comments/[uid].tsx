@@ -130,6 +130,7 @@ export default function CommentScreen() {
           setRatingValue(0);
           setCommentAdded(true);
           updatePlanScore();
+          planData.score = ratingValue;
           setRefreshData(refreshData + 1); // Incrementa el estado para forzar la recarga de datos
         } catch (e) {
           console.log("🔴 ERROR: Error adding document:", e);
@@ -264,7 +265,7 @@ export default function CommentScreen() {
               <Text style={styles.titleCard}>{planData.name}</Text>
               <View style={{ flexDirection: "row" }}>
                 <Text style={styles.scoreNumber}>
-                  {planData.score as number}
+                  {planData.score.toFixed(2)}
                 </Text>
                 <Rating size={20} value={planData.score as number} />
               </View>
