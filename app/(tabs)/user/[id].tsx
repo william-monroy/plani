@@ -27,6 +27,7 @@ import Rating from "@/components/UserRating";
 import { PlanRowCard } from "@/components/PlanRowCard";
 import LoadingView from "@/layout/LoadingView";
 import { Ionicons } from "@expo/vector-icons";
+import { parseDate } from "@/utils/Timestamp";
 
 const UserPage = () => {
   const { id } = useLocalSearchParams();
@@ -107,7 +108,7 @@ const UserPage = () => {
                       (plan: Plan) => plan.idAdmin == (user.uid as string)
                     )
                     // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-                    .filter((plan: Plan) => (plan.dateEnd as Date) < new Date())
+                    .filter((plan: Plan) => (parseDate(plan.dateEnd) as Date) > new Date())
                     .map((plan: Plan, key: number) => (
                       // <PlanCard key={key} {...plan} />
                       <PlanRowCard key={key} {...plan} />
@@ -165,7 +166,7 @@ const UserPage = () => {
                   .filter((plan: Plan) =>
                     plan.guests.includes(user.uid as string)
                   )
-                  .filter((plan: Plan) => (plan.dateEnd as Date) < new Date())
+                  .filter((plan: Plan) => (parseDate(plan.dateEnd) as Date) > new Date())
                   .map((plan: Plan, key: number) => (
                     // <PlanCard key={key} {...plan} />
                     <PlanRowCard key={key} {...plan} />

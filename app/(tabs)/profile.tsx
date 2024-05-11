@@ -104,7 +104,7 @@ export const ProfilePage = () => {
                   // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
                   .filter(
                     (plan: Plan) =>
-                      (parseDate(plan.dateEnd) as Date) < new Date()
+                      (parseDate(plan.dateEnd) as Date) > new Date()
                   )
                   .map((plan: Plan, key: number) => (
                     // <PlanCard key={key} {...plan} />
@@ -160,7 +160,7 @@ export const ProfilePage = () => {
                     plan.guests.includes(user.uid as string)
                   )
                   // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
-                  .filter((plan: Plan) => (plan.dateEnd as Date) < new Date())
+                  .filter((plan: Plan) => (parseDate(plan.dateEnd) as Date) > new Date())
                   .map((plan: Plan, key: number) => (
                     // <PlanCard key={key} {...plan} />
                     <PlanRowCard key={key} {...plan} />
