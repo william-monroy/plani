@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   collection,
   getDocs,
@@ -17,6 +17,7 @@ import {
   ScrollView,
   RefreshControl,
   Switch,
+  TouchableOpacity,
 } from "react-native";
 import { User } from "@/types/User.type";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
@@ -25,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Rating from "@/components/UserRating";
 import { PlanRowCard } from "@/components/PlanRowCard";
 import LoadingView from "@/layout/LoadingView";
+import { Ionicons } from "@expo/vector-icons";
 
 const UserPage = () => {
   const { id } = useLocalSearchParams();
@@ -61,7 +63,7 @@ const UserPage = () => {
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Cargando planes...</Text>
+          <LoadingView text="Cargando Planes..." />
         ) : (
           <View style={styles.plans_index}>
             <ScrollView
@@ -121,7 +123,7 @@ const UserPage = () => {
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Cargando planes...</Text>
+          <LoadingView text="Cargando Planes..." />
         ) : (
           <ScrollView
             style={styles.plans_index}
@@ -221,13 +223,24 @@ const UserPage = () => {
         // <Text>Cargando datos del usuario...</Text>
         <LoadingView text="" />
       ) : (
-        <View style={styles.userInfo}>
-          <Image source={{ uri: image as string }} style={styles.userPhoto} />
-          <View style={{ gap: 10, alignItems: "center" }}>
-            <Text style={styles.userName}>
-              {user.firstName.split(" ")[0]} {user.lastName.split(" ")[0]}
-            </Text>
-            <Rating size={20} value={user.score as number} />
+        <View>
+          <TouchableOpacity style={styles.row} onPress={() => router.back()}>
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              style={styles.icon}
+              color="#FF9500"
+            />
+            <Text style={{ fontSize: 14, color: "#FF9500" }}>Regresar</Text>
+          </TouchableOpacity>
+          <View style={styles.userInfo}>
+            <Image source={{ uri: image as string }} style={styles.userPhoto} />
+            <View style={{ gap: 10, alignItems: "center" }}>
+              <Text style={styles.userName}>
+                {user.firstName.split(" ")[0]} {user.lastName.split(" ")[0]}
+              </Text>
+              <Rating size={20} value={user.score as number} />
+            </View>
           </View>
         </View>
       )}
@@ -263,6 +276,19 @@ const styles = StyleSheet.create({
   scene: {
     flex: 4,
   },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    width: 110,
+  },
+  icon: {
+    padding: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
   tabBar: {
     backgroundColor: "white", // Fondo blanco para un look minimalista
     shadowOpacity: 0, // Quitamos cualquier sombra para un diseño más limpio
@@ -279,7 +305,7 @@ const styles = StyleSheet.create({
     textTransform: "none", // Mantenemos el caso de texto original sin transformar
   },
   userInfo: {
-    marginTop: "5%",
+    // marginTop: "5%",
     flexDirection: "row",
     alignItems: "center",
     //marginBottom: 10

@@ -15,7 +15,11 @@ export const PlanRowCard = (props: Plan) => {
       onPress={() => router.push(`/plan/${uid}`)}
     >
       {picture && (
-        <Image source={{ uri: picture }} style={styles.userCardImage} />
+        <Image
+          contentFit="cover"
+          source={{ uri: picture }}
+          style={styles.userCardImage}
+        />
       )}
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.userCardTitle}>{name}</Text>
@@ -72,7 +76,7 @@ const styles = StyleSheet.create({
   userCardImage: {
     width: 100,
     height: 100,
-    resizeMode: "cover",
+    // resizeMode: "cover",
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
   },

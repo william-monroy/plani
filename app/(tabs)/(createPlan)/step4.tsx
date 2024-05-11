@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useEffect, useState } from "react";
 import PlanStep from "@/layout/PlanStep";
 import { useNewPlanStore } from "@/store/newPlan-store";
@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { db, storage } from "../../_infrastructure/firebase";
 import { router } from "expo-router";
+import { Image } from "expo-image";
 
 const step4 = () => {
   const setCurrentStep = useNewPlanStore((state) => state.setCurrent);
@@ -217,9 +218,14 @@ const step4 = () => {
             </Text>
           )}
           {image ? (
-            <Image source={{ uri: image }} style={styles.userCardImage} />
+            <Image
+              contentFit="cover"
+              source={{ uri: image }}
+              style={styles.userCardImage}
+            />
           ) : (
             <Image
+              contentFit="cover"
               source={require("../../../assets/plan.jpg")}
               style={styles.userCardImage}
             />
@@ -282,7 +288,7 @@ const styles = StyleSheet.create({
     height: "100%",
     margin: 0,
     padding: 0,
-    resizeMode: "cover",
+    // resizeMode: "cover",
     borderRadius: 10,
   },
 });
