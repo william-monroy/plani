@@ -40,8 +40,10 @@ export default function PlanScreen() {
 
   const [planData, setPlanData] = useState<Plan>({} as Plan);
   const [guests, setGuests] = useState<User[]>([] as User[]);
+  const [solicitudes, setSolicitud] = useState<User[]>([] as User[]);
   const [admin, setAdmin] = useState<User>({} as User);
   const [planAdded, setPlanAdded] = useState<boolean>(false);
+  const [planSol, setPlanSol] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const { uid } = useLocalSearchParams();
@@ -66,9 +68,9 @@ export default function PlanScreen() {
     try {
       // Actualiza el campo 'guests' añadiendo el 'userId' a la lista
       await updateDoc(planRef, {
-        guests: arrayUnion(userId),
+        solicitud: arrayUnion(userId),
       });
-      console.log("Asistente añadido con éxito");
+      console.log("Asistente añadido a solicitud con exito");
       setRefreshData((prev) => prev + 1); // Incrementa el contador para refrescar datos
     } catch (error) {
       console.error("Error añadiendo asistente: ", error);
@@ -81,7 +83,7 @@ export default function PlanScreen() {
       mensaje:
         "El usuario " +
         userName +
-        ' se ha unido al plan "' +
+        ' ha solicitado unirse al plan "' +
         planData.name +
         '"',
       fecha: new Date(),
@@ -113,9 +115,11 @@ export default function PlanScreen() {
       // Actualiza el campo 'guests' borrando el 'userId' a la lista
       await updateDoc(planRef, {
         guests: arrayRemove(userId),
+        solicitud: arrayRemove(userId),
       });
       console.log("Asistente borrado con éxito");
       setPlanAdded(false);
+      setPlanSol(false);
       setRefreshData((prev) => prev + 1); // Incrementa el contador para refrescar datos
     } catch (error) {
       console.error("Error borrando asistente: ", error);
@@ -154,7 +158,7 @@ export default function PlanScreen() {
 
         const guestsData: User[] = [];
         for (const guestId of planData.guests) {
-          if (guestId === userId) setPlanAdded(true);
+          (guestId === userId) ? setPlanAdded(true) : setPlanAdded(false);
           const docRef = doc(db, "Usuarios", guestId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
@@ -162,6 +166,18 @@ export default function PlanScreen() {
           }
         }
         setGuests(guestsData);
+
+        const guestsSol: User[] = [];
+        for (const guestId of planData.solicitud) {
+          // if (guestId === userId) setPlanSol(true);
+          (guestId === userId) ? setPlanSol(true) : setPlanSol(false);
+          const docRef = doc(db, "Usuarios", guestId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            guestsSol.push(docSnap.data() as User);
+          }
+        }
+        setSolicitud(guestsSol);
 
         let adminData: User = {} as User;
         const docRef = doc(db, "Usuarios", planData.idAdmin);
@@ -171,7 +187,6 @@ export default function PlanScreen() {
           adminData = docSnap.data() as User;
         }
         setAdmin(adminData);
-        console.log(admin);
         const idAdmins = querySnapshot.docs.map((doc) => doc.data().idAdmin);
         // console.log(planData.idAdmin);
         // console.log(admin.uid);
@@ -190,6 +205,7 @@ export default function PlanScreen() {
   };
 
   const getUsersData = async () => {
+    setRefreshing(true);
     try {
       const q = query(
         collection(db, "Usuarios"),
@@ -205,7 +221,7 @@ export default function PlanScreen() {
         planId: planData.uid,
       }));
       setSolicitudes(userData);
-      setIsLoading(false);
+      setRefreshing(false);
     } catch (error) {
       console.error("Error getting users data: ", error);
     }
@@ -321,7 +337,8 @@ export default function PlanScreen() {
           </ScrollView>
           <View style={styles.container2}>
             {/* {new Date((planData.dateEnd?.seconds as number) * 1000) < */}
-            {(planData.dateEnd as Date) < new Date() ? (
+            {planData?.dateEnd &&
+              (parseDate(planData.dateEnd) as Date) < new Date() ? (
               <Pressable
                 style={styles.button}
                 onPress={() => router.push(`/comments/${uid}`)}
@@ -330,9 +347,15 @@ export default function PlanScreen() {
               </Pressable>
             ) : planData.idAdmin != useUserStore.getState().uid ? (
               planAdded === false ? (
-                <Pressable style={styles.button} onPress={nuevoAsistente}>
-                  <Text style={styles.textButton}>Apuntarme</Text>
-                </Pressable>
+                planSol === true ? (
+                  <Pressable style={styles.button} onPress={borrarAsistente}>
+                    <Text style={styles.textButton}>Solicitado</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable style={styles.button} onPress={nuevoAsistente}>
+                    <Text style={styles.textButton}>Apuntarme</Text>
+                  </Pressable>
+                )
               ) : (
                 <Pressable style={styles.button} onPress={borrarAsistente}>
                   <Text style={styles.textButton}>Salir del plan</Text>
