@@ -13,4 +13,5 @@ export interface User {
   uid: String;
   registered: Date | undefined;
   avatar: String;
+  
 }

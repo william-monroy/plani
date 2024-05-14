@@ -13,30 +13,44 @@ import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   Pressable,
-  TouchableOpacity,
   Dimensions,
   ScrollView,
+  RefreshControl,
+  Switch,
+  Image,
+  TouchableOpacity,
 } from "react-native";
 import { useUserStore } from "@/store/user-store";
 import { User } from "@/types/User.type";
 import * as ImagePicker from "expo-image-picker";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { Plan } from "@/types/Plan.type";
-import { PlanCard } from "@/components/PlanCard";
 import Rating from "@/components/UserRating";
+import { PlanRowCard } from "@/components/PlanRowCard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { parseDate } from "@/utils/Timestamp";
+import { Ionicons } from "@expo/vector-icons";
 
 export const ProfilePage = () => {
   const { avatar } = useUserStore.getState();
   const [user, setUser] = useState<User>({} as User);
   const [refreshData, setRefreshData] = useState(0); // Añade este estado
   const [image, setImage] = useState<string>(avatar as string); // Añade este estado
+  //const [image, setImage] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+  const [isEnabledMyPlans, setIsEnabledMyPlans] = useState(true);
+  const toggleSwitchMyPlans = () =>
+    setIsEnabledMyPlans((previousState) => !previousState);
+  const [isEnabledJoined, setIsEnabledJoined] = useState(true);
+  const toggleSwitchJoined = () =>
+    setIsEnabledJoined((previousState) => !previousState);
 
   //desde aqui
   const [routes] = useState([
@@ -44,24 +58,58 @@ export const ProfilePage = () => {
     { key: "joinedPlans", title: "Apuntado" },
   ]);
 
+  const insets = useSafeAreaInsets();
+
   const initialLayout = { width: Dimensions.get("window").width };
 
   const MyPlansRoute = () => (
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
-      {/* <Text>Mis Planes</Text> */}
       <View style={styles.container2_index}>
-        {/* <Text style={[{ marginBottom: 15 }, styles.subTitle_index]}>
-          Planes cercanos
-        </Text> */}
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Loading plans...</Text>
         ) : (
-          <ScrollView style={styles.plans_index}>
-            {planes
-              .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
-              .map((plan: Plan, key: number) => (
-                <PlanCard key={key} {...plan} />
-              ))}
+          <ScrollView
+            style={styles.plans_index}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 15,
+              }}
+            >
+              <Text>Mostrar planes pasados</Text>
+              <Switch
+                trackColor={{ false: "#767577", true: "#85C1E9" }}
+                thumbColor={isEnabledMyPlans ? "orange" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitchMyPlans}
+                value={isEnabledMyPlans}
+              />
+            </View>
+            {planes.length > 0 && isEnabledMyPlans
+              ? planes
+                  .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))
+              : planes
+                  .filter((plan: Plan) => plan.idAdmin == (user.uid as string))
+                  // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
+                  .filter(
+                    (plan: Plan) =>
+                      (parseDate(plan.dateEnd) as Date) > new Date()
+                  )
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))}
           </ScrollView>
         )}
       </View>
@@ -72,21 +120,63 @@ export const ProfilePage = () => {
     <View style={[styles.scene, { backgroundColor: "#ffffff" }]}>
       <View style={styles.container2_index}>
         {isLoading ? (
-          <Text>Loading users...</Text>
+          <Text>Loading plans...</Text>
         ) : (
-          <ScrollView style={styles.plans_index}>
-            {planes
-              .filter((plan: Plan) => plan.guests.includes(user.uid as string))
-              .map((plan: Plan, key: number) => (
-                <PlanCard key={key} {...plan} />
-              ))}
+          <ScrollView
+            style={styles.plans_index}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 15,
+              }}
+            >
+              <Text>Mostrar planes pasados</Text>
+              <Switch
+                trackColor={{ false: "#767577", true: "#85C1E9" }}
+                thumbColor={isEnabledJoined ? "orange" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitchJoined}
+                value={isEnabledJoined}
+              />
+            </View>
+            {planes.length > 0 && isEnabledJoined
+              ? planes
+                  .filter((plan: Plan) =>
+                    plan.guests.includes(user.uid as string)
+                  )
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))
+              : planes
+                  .filter((plan: Plan) =>
+                    plan.guests.includes(user.uid as string)
+                  )
+                  // .filter((plan: Plan) => new Date((plan.dateEnd?.seconds as number) * 1000) > new Date())
+                  .filter((plan: Plan) => (parseDate(plan.dateEnd) as Date) > new Date())
+                  .map((plan: Plan, key: number) => (
+                    // <PlanCard key={key} {...plan} />
+                    <PlanRowCard key={key} {...plan} />
+                  ))}
           </ScrollView>
         )}
       </View>
     </View>
   );
 
+  const onRefresh = () => {
+    getData(); // Puedes optar por llamar a getData o cualquier otra función que actualice tus datos
+  };
+
   const getData = async () => {
+    setRefreshing(true);
     const collectionRef = collection(db, "Planes");
 
     await onSnapshot(collectionRef, async (data) => {
@@ -96,8 +186,9 @@ export const ProfilePage = () => {
           return planData as Plan;
         })
       );
-      console.log("Planes updated", JSON.stringify(planes, null, 2));
+      // console.log("Planes updated", JSON.stringify(planes, null, 2));
       setIsLoading(false);
+      setRefreshing(false);
     });
   };
 
@@ -110,11 +201,12 @@ export const ProfilePage = () => {
   const { uid } = useLocalSearchParams();
 
   const pickImage = async () => {
+    //setRefreshing(true);
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        console.log("Permission denied");
+        console.log("🔴 ERROR: Permission denied");
         return;
       }
 
@@ -126,17 +218,21 @@ export const ProfilePage = () => {
       });
 
       if (!result.canceled) {
-        console.log(result.assets[0].uri);
+        // console.log(result.assets[0].uri);
         setImage(result.assets[0].uri);
         updateUser();
+        //setIsLoadingUserData(true);
       }
     } catch (error) {
-      console.error("Error picking image: ", error);
+      console.log("🔴 ERROR: Error picking image", error);
     }
+    setRefreshing(false);
   };
 
   const updateUser = async () => {
-    const userId = user.uid;
+    setIsLoadingUserData(true);
+    const { uid } = useUserStore.getState();
+    const userId = uid;
     try {
       const uri = image as string;
       const blob = await new Promise((resolve, reject) => {
@@ -152,7 +248,7 @@ export const ProfilePage = () => {
         xhr.send(null);
       });
       const filename = uri.substring(uri.lastIndexOf("/") + 1);
-      const storageRef = ref(storage, `planes/${userId}/${filename}`);
+      const storageRef = ref(storage, `users/${userId}/${filename}`);
       const uploadTask = uploadBytesResumable(storageRef, blob as Blob);
 
       uploadTask.on(
@@ -171,37 +267,46 @@ export const ProfilePage = () => {
           }
         },
         (error) => {
-          console.error("Error uploading image: ", error);
+          console.log("ERROR: Error uploading image", error);
+          alert("Ha ocurrido un error al subir la imagen😔");
+          setIsLoadingUserData(false);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            console.log("File available at", downloadURL);
-            setImageUrl(downloadURL);
-            const docRef = doc(db, "Usuarios", userId as string);
-            updateDoc(docRef, { avatar: imageUrl });
-          });
-        }
-      );
+          getDownloadURL(uploadTask.snapshot.ref).then(
+            async (downloadURL) => {
+              console.log("File available at", downloadURL);
+              setImageUrl(downloadURL);
+              const userRef = doc(db, `Usuarios/${userId}`);
+              await updateDoc(userRef, {avatar: downloadURL as string });
+            });
+          }
+        );
+        setIsLoadingUserData(false);
     } catch (error) {
-      console.error("Error uploading image: ", error);
+      console.log("🔴 ERROR: Error uploading image", error);
+      alert("Ha ocurrido un error al subir la imagen😔");
+      setIsLoadingUserData(false);
     }
   };
 
   const getUserData = async () => {
     const userId = useUserStore.getState().uid;
+    setRefreshing(true);
     try {
       let userData: User = {} as User;
       const docRef = doc(db, "Usuarios", userId as string);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        console.log("User data:", docSnap.data());
+        // console.log("User data:", docSnap.data());
         userData = docSnap.data() as User;
       }
       setUser(userData);
       setImage(userData.avatar as string);
+      setIsLoadingUserData(false);
+      setRefreshing(false);
       console.log(user);
     } catch (error) {
-      console.error("Error getting documents: ", error);
+      console.log("🔴 ERROR: Error getting documents:", error);
     }
   };
 
@@ -213,29 +318,36 @@ export const ProfilePage = () => {
   const avatarUri = useUserStore.getState().avatar;
 
   return (
-    <View style={styles.container}>
-      {/* Foto y nombre del usuario */}
-      <View style={styles.userInfo}>
-        <TouchableOpacity onPress={pickImage}>
-          <Image source={{ uri: image as string }} style={styles.userPhoto} />
-        </TouchableOpacity>
-        <View style={{ gap: 10, alignItems: "center" }}>
-          <Text style={styles.userName}>
-            {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
-          </Text>
-          <Rating size={20} value={user.score as number} />
-        </View>
-      </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {isLoadingUserData ? (
+        <Text>Loading user data...</Text>
+      ) : (
+        <View>
+          <View style={styles.userInfo}>
+            <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+              <Image source={{uri: image as string}} style={styles.userPhoto}/>
+              <View style={styles.iconContainer}>
+                <Ionicons name="create-outline" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+            <View style={{ gap: 10, alignItems: "center" }}>
+              <Text style={styles.userName}>
+                {user.firstName?.split(" ")[0]} {user.lastName?.split(" ")[0]}
+              </Text>
+              <Rating size={20} value={user.score as number} />
+            </View>
+          </View>
 
-      {/* Botón de Cerrar sesión */}
-      <View style={styles.container2}>
-        <Pressable
-          style={styles.button}
-          onPress={async () => await signOut(getAuth())}
-        >
-          <Text style={styles.textButton}>Cerrar sesión</Text>
-        </Pressable>
-      </View>
+          <View style={styles.container2}>
+            <Pressable
+              style={styles.button}
+              onPress={async () => await signOut(getAuth())}
+            >
+              <Text style={styles.textButton}>Cerrar sesión</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       <TabView
         navigationState={{ index, routes }}
@@ -260,7 +372,8 @@ export const ProfilePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    marginTop: 20,
     backgroundColor: "#fff",
   },
   scene: {
@@ -283,8 +396,16 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flexDirection: "row",
+    gap: 20,
     alignItems: "center",
     //marginBottom: 10
+  },
+  imageContainer: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    overflow: 'hidden',
   },
   userPhoto: {
     width: 100,
@@ -338,6 +459,17 @@ const styles = StyleSheet.create({
   subTitle_index: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: '20%',
+    left: '20%',
+    transform: [{ translateX: -20 }, { translateY: -20 }], // Ajusta la posición del ícono
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo del ícono
+    padding: 38, // Relleno del ícono
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
 });
 

@@ -1,14 +1,9 @@
-import { GeoPoint } from "firebase/firestore";
-
-interface CustomTimestamp {
-  seconds: number;
-  nanoseconds: number;
-}
+import { GeoPoint, Timestamp } from "firebase/firestore";
 
 export interface Plan {
   coordinates: GeoPoint;
-  dateEnd: CustomTimestamp | undefined;
-  dateStart: CustomTimestamp | undefined;
+  dateEnd: Date | Timestamp | undefined;
+  dateStart: Date | Timestamp | undefined;
   description?: string;
   guests: string[];
   idAdmin: string;
@@ -20,4 +15,5 @@ export interface Plan {
   requests: string[];
   score: Number;
   uid: string;
+  solicitud: string[];
 }

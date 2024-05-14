@@ -1,17 +1,13 @@
 import { Plan } from "@/types/Plan.type";
-import { timestampToDate } from "@/utils/Timestamp";
-import { activities } from "@/utils/constants";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { Timestamp } from "firebase/firestore";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { timestampToDate } from "@/utils/Timestamp";
+import { Timestamp } from "firebase/firestore";
 
-export const PlanCard = (props: Plan) => {
-  const { uid, name, picture, dateEnd, dateStart, description, labels } = props;
-
-  // useEffect(() => {
-  //   console.log("PlanCard props:", props);
-  // }, []);
+export const PlanRowCard = (props: Plan) => {
+  const { uid, name, picture, dateEnd, dateStart, guests } = props;
 
   return (
     <TouchableOpacity
@@ -38,18 +34,20 @@ export const PlanCard = (props: Plan) => {
             ? timestampToDate(dateEnd as Timestamp)?.toLocaleDateString()
             : ""}
         </Text>
-        <Text style={styles.userCardDescription}>{description}</Text>
-        {labels && (
-          <View style={styles.labelsContainer}>
-            {labels.map((label: string, index: number) => (
-              <View key={index} style={styles.labelContainer}>
-                <Text style={styles.labelText}>
-                  {activities[label] || label}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
+        <View style={styles.row}>
+          <Ionicons name="people" size={20} color="black" />
+          {guests.length > 0 ? (
+            <Text style={styles.asistentesText}>
+              {" "}
+              {guests.length} apuntados
+            </Text>
+          ) : (
+            <Text style={styles.asistentesText}>
+              {" "}
+              Sé el primero en apuntarte
+            </Text>
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -58,61 +56,37 @@ export const PlanCard = (props: Plan) => {
 const styles = StyleSheet.create({
   userCardContainer: {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "row",
     borderColor: "#e0e0e0",
     borderWidth: 1,
     borderRadius: 10,
     width: "100%",
     marginBottom: 15,
-    paddingBottom: 10,
-    // shadow
-    backgroundColor: "white",
-    shadowColor: "black",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.23,
-    shadowRadius: 2.62,
   },
   userCardTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     marginTop: 8,
-  },
-  userCardSubTitle: {
-    fontSize: 18,
   },
   userCardDate: {
     fontSize: 14,
     marginTop: 8,
     color: "#666",
   },
-  userCardDescription: {
-    fontSize: 14,
-    marginTop: 8,
-    color: "#666",
-  },
   userCardImage: {
-    width: "100%",
-    height: 180,
+    width: 100,
+    height: 100,
     // resizeMode: "cover",
     borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
   },
-  labelsContainer: {
+  asistentesText: {
+    fontSize: 14,
+    color: "#666",
+  },
+  row: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 5,
-    marginTop: 10,
-  },
-  labelContainer: {
-    backgroundColor: "#e0e0e0",
-    padding: 5,
-    marginRight: 5,
-    borderRadius: 5,
-  },
-  labelText: {
-    fontSize: 12,
+    alignItems: "center",
+    marginTop: 6,
   },
 });

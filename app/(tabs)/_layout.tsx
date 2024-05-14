@@ -10,9 +10,9 @@ const TabsLayout = () => {
   // const update = useUserStore((state) => state.update);
 
   const checkUser = async () => {
-    console.log("🔴authState");
+    // console.log("🔴authState");
     getAuth().onAuthStateChanged(async (user) => {
-      console.log("user:", user);
+      // console.log("user:", user);
       setIsLoading(false);
       if (!user) {
         router.replace("/landing");
@@ -34,28 +34,81 @@ const TabsLayout = () => {
           headerShown: false,
           title: "Buscar",
           tabBarIcon: ({ focused }) => (
-            <Octicons name="search" size={24} color={focused ? "orange" : "gray"} />
+            <Octicons
+              name="search"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
+          tabBarLabel(props) {
+            return (
+              <Text
+                style={{
+                  color: props.focused ? "orange" : "gray",
+                  fontSize: 10,
+                }}
+              >
+                Buscar
+              </Text>
+            );
+          },
         }}
       />
       <Tabs.Screen
         name="plan/[uid]"
         options={{
-            headerShown: false,
-            tabBarStyle:{
-                display:"none",
-            },
-            href:null
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
       <Tabs.Screen
-        name="newPlan"
+        name="solicitudes/[planId]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="comments/[uid]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="notificaciones/[uid]"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step1"
         options={{
           title: "Subir",
           headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <Octicons name="diff-added" size={24} color={focused ? "orange" : "gray"}  />
+            <Octicons
+              name="diff-added"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
+          tabBarStyle: {
+            display: "none",
+          },
         }}
       />
       <Tabs.Screen
@@ -68,11 +121,56 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="profile"
         options={{
-          headerTitle: "Perfil",
-          title: "Perfil",
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <Octicons name="person" size={24} color={focused ? "orange" : "gray"}  />
+            <Octicons
+              name="person"
+              size={24}
+              color={focused ? "orange" : "gray"}
+            />
           ),
+          tabBarLabel(props) {
+            return (
+              <Text
+                style={{
+                  color: props.focused ? "orange" : "gray",
+                  fontSize: 10,
+                }}
+              >
+                Buscar
+              </Text>
+            );
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step2"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step3"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(createPlan)/step4"
+        options={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          href: null,
         }}
       />
     </Tabs>

@@ -56,7 +56,7 @@ const RegisterScreen = () => {
                 firstName.split(" ")[0]
               }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
-            console.log("user.user.uid: ", user.uid);
+            // console.log("user.user.uid: ", user.uid);
             // console.log("Document written with ID: ", docRef.id);
             update({
               email: email,
@@ -70,9 +70,9 @@ const RegisterScreen = () => {
                 firstName.split(" ")[0]
               }+${lastName.split(" ")[0]}&background=random&color=fff`,
             });
-            console.log("user.user.uid: ", user.uid);
+            // console.log("user.user.uid: ", user.uid);
           } catch (e) {
-            console.error("Error adding document: ", e);
+            console.log("🔴 ERROR: Error adding document", e);
           }
           router.replace("preferences");
         }

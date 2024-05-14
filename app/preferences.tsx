@@ -76,11 +76,11 @@ const PreferencesScreen = () => {
         await updateDoc(userDoc, {
           labels: selectedPreferences,
         });
-        console.log("Document updated for user with ID: ", userId);
+        // console.log("Document updated for user with ID: ", userId);
         router.replace("/(tabs)");
       });
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.log("🔴 ERROR: Error adding document", e);
     }
   };
 
@@ -465,7 +465,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
     borderRadius: 10,
     opacity: 0.7,
     justifyContent: "center",
